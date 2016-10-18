@@ -14,7 +14,7 @@
 #define PLUGIN_TAG						"{green}[{red}Contract{green}]{default}"
 #define PLUGIN_NAME						"[ANY] Contract"
 #define PLUGIN_AUTHOR 					"Arkarr"
-#define PLUGIN_VERSION 					"1.00"
+#define PLUGIN_VERSION 					"1.5"
 #define PLUGIN_DESCRIPTION 				"Assign cotnract to player and let them a certain period of time to do it to earn extra credits."
 //KeyValue fields
 #define FIELD_CONTRACT_NAME 			"Contract Name"
