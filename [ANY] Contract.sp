@@ -1,6 +1,7 @@
 #include <sourcemod>
 #include <sdktools>
 #include <multicolors>
+#include <sdkhooks>
 #undef REQUIRE_PLUGIN
 #include <zephyrus_store>
 #include <smrpg>
@@ -29,13 +30,6 @@
 #define QUERY_NEW_ENTRY					"INSERT INTO `contracts` (`steamid`,`name`,`points`,`accomplishedcount`) VALUES (\"%s\", '%s', %i, %i);"
 #define QUERY_ALL_CONTRACTS				"SELECT `name`, `points`,`accomplishedcount` FROM `contracts` ORDER BY `points` DESC"
 #define QUERY_CLEAR_CONTRACTS			"DELETE FROM `contracts`"
-//Game related stuff
-#define TEAM_RED_TERRORIST				2
-#define TEAM_BLU_COUNTERTERRORIST		3
-#define TF_DEATHFLAG_DEADRINGER     	(1 << 5)
-#define TF_CUSTOM_DECAPITATION			20
-#define TF_CUSTOM_HEADSHOT				1
-#define TF_CUSTOM_HEADSHOT_DECAPITATION	511
 //Other plugins related stuff
 #define STORE_NONE						"NONE"
 #define STORE_ZEPHYRUS					"ZEPHYRUS"
@@ -105,8 +99,8 @@ public void OnPluginStart()
 	HookEvent("player_death", OnPlayerDeath);
 	
 	engineName = GetEngineVersion();
-
-	if(GetConVarInt(CVAR_MinimumPlayers) <= GetPlayerCount())
+	
+	if (GetConVarInt(CVAR_MinimumPlayers) <= GetPlayerCount())
 		TIMER_ContractsDistribution = CreateTimer(300.0, TMR_DistributeContracts, _, TIMER_REPEAT);
 	
 	if (engineName != Engine_CSS || engineName != Engine_CSGO)
@@ -118,6 +112,7 @@ public void OnPluginStart()
 			continue;
 		
 		GetClientAbsOrigin(z, lastPosition[z]);
+		SDKHook(z, SDKHook_OnTakeDamage, OnTakeDamage);
 	}
 	
 	LoadTranslations("common.phrases");
@@ -146,9 +141,9 @@ public void OnConfigsExecuted()
 
 public void OnClientConnected(int client)
 {
-	if(TIMER_ContractsDistribution == INVALID_HANDLE)
+	if (TIMER_ContractsDistribution == INVALID_HANDLE)
 	{
-		if(GetConVarInt(CVAR_MinimumPlayers) <= GetPlayerCount())
+		if (GetConVarInt(CVAR_MinimumPlayers) <= GetPlayerCount())
 			TIMER_ContractsDistribution = CreateTimer(300.0, TMR_DistributeContracts, _, TIMER_REPEAT);
 	}
 	
@@ -157,14 +152,19 @@ public void OnClientConnected(int client)
 	LoadContracts(client);
 }
 
+public OnClientPutInServer(client)
+{
+	SDKHook(client, SDKHook_OnTakeDamage, OnTakeDamage);
+}
+
 public void OnClientDisconnect(int client)
 {
 	if (!IsValidClient(client))
 		return;
-		
-	if(TIMER_ContractsDistribution != INVALID_HANDLE)
+	
+	if (TIMER_ContractsDistribution != INVALID_HANDLE)
 	{
-		if(GetConVarInt(CVAR_MinimumPlayers) > GetPlayerCount())
+		if (GetConVarInt(CVAR_MinimumPlayers) > GetPlayerCount())
 		{
 			KillTimer(TIMER_ContractsDistribution);
 			TIMER_ContractsDistribution = INVALID_HANDLE;
@@ -180,15 +180,18 @@ public void OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 	int client = GetClientOfUserId(GetEventInt(event, "userid"));
 	int attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
 	
-	if(!IsValidClient(client) || (!IsInContract[client] && !IsInContract[attacker]) || (GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER))
+	if (!IsValidClient(client) || (!IsInContract[client] && !IsInContract[attacker]))
 		return;
 	
-	if(StrEqual(contractType[attacker], "HEADSHOT"))
+	if (StrEqual(contractType[attacker], "HEADSHOT"))
 	{
 		int customkill = GetEventInt(event, "customkill");
 		
 		if (engineName == Engine_TF2)
 		{
+			if (GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER)
+				return;
+			
 			if ((customkill == TF_CUSTOM_HEADSHOT || customkill == TF_CUSTOM_HEADSHOT_DECAPITATION))
 			{
 				contractProgress[attacker]++;
@@ -204,67 +207,48 @@ public void OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 			}
 		}
 	}
-	else if(StrEqual(contractType[client], "DIE"))
+	else if (StrEqual(contractType[client], "DIE"))
 	{
-		if(CheckKillMethod(client))
-				contractProgress[client]++;
+		if (CheckKillMethod(client))
+			contractProgress[client]++;
 		
 		if (IsInContract[attacker] && StrEqual(contractType[attacker], "KILL"))
 		{
-			if(CheckKillMethod(attacker))
-					contractProgress[attacker]++;
+			if (CheckKillMethod(attacker))
+				contractProgress[attacker]++;
 			
 			VerifyContract(attacker);
 		}
 		
 		VerifyContract(client);
 	}
-	else if(StrEqual(contractType[attacker], "KILL"))
+	else if (StrEqual(contractType[attacker], "KILL"))
 	{
-		if(CheckKillMethod(attacker))
-				contractProgress[attacker]++;
+		if (CheckKillMethod(attacker))
+			contractProgress[attacker]++;
 		
 		VerifyContract(attacker);
 	}
 }
 
-public bool CheckKillMethod(int client)
+public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &damage, int &damagetype)
 {
-	if(strlen(contractWeapon[client]) < 3)
-		return true;
+	if (!IsValidClient(victim) || (!IsInContract[victim] && !IsInContract[attacker]))
+		return Plugin_Continue;
 	
-	char sWeapon[100];
-	int aWeapon = GetEntPropEnt(client, Prop_Data, "m_hActiveWeapon");
-	if(IsValidEntity(aWeapon))
-		GetEntPropString(aWeapon, Prop_Data, "m_iClassname", sWeapon, sizeof(sWeapon));
+	if (IsInContract[victim] && StrEqual(contractType[victim], "TAKE_DAMAGE"))
+	{
+		contractProgress[victim] += damage;
+		VerifyContract(victim);
+	}
 	
-	if(StrEqual(contractWeapon[client], sWeapon))
+	if(IsInContract[attacker] && StrEqual(contractType[attacker], "DEAL_DAMAGE"))
 	{
-		return true;
+		contractProgress[attacker] += damage;
+		VerifyContract(attacker);
 	}
-	else
-	{
-    	if (engineName == Engine_TF2)
-		{
-			if(StrEqual(contractWeapon[client], "PRIMARY") && aWeapon == GetPlayerWeaponSlot(client, TFWeaponSlot_Primary))
-				return true;
-			else if(StrEqual(contractWeapon[client], "SECONDARY") && aWeapon == GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary))
-				return true;
-			else if(StrEqual(contractWeapon[client], "MELEE") && aWeapon == GetPlayerWeaponSlot(client, TFWeaponSlot_Melee))
-				return true;
-		}
-		else if(engineName == Engine_CSGO || engineName == Engine_CSS)
-		{
-			if(StrEqual(contractWeapon[client], "PRIMARY") && aWeapon == GetPlayerWeaponSlot(client, CS_SLOT_PRIMARY))
-				return true;
-			else if(StrEqual(contractWeapon[client], "SECONDARY") && aWeapon == GetPlayerWeaponSlot(client, CS_SLOT_SECONDARY))
-				return true;
-			else if(StrEqual(contractWeapon[client], "MELEE") && aWeapon == GetPlayerWeaponSlot(client, CS_SLOT_KNIFE))
-				return true;
-		}
-	}
-			
-	return false;
+	
+	return Plugin_Continue;
 }
 
 //Command callback.
@@ -275,11 +259,11 @@ public bool CheckKillMethod(int client)
 
 public Action CMD_ResetContract(int client, int args)
 {
-	if(client == 0)
+	if (client == 0)
 		PrintToServer("[Contract] %t", "Database_reset");
 	else
 		CPrintToChat(client, "%s %t", PLUGIN_TAG, "Database_reset");
-		
+	
 	for (int z = 0; z < MaxClients; z++)
 	{
 		IsInContract[z] = false;
@@ -288,10 +272,10 @@ public Action CMD_ResetContract(int client, int args)
 		contractPoints[z] = 0;
 		contractAccomplishedCount[z] = 0;
 	}
-		
+	
 	SQL_FastQuery(DATABASE_Contract, QUERY_CLEAR_CONTRACTS);
 	
-	if(client == 0)
+	if (client == 0)
 		PrintToServer("[Contract] %t", "Done");
 	else
 		CPrintToChat(client, "%s %t", PLUGIN_TAG, "Done");
@@ -306,28 +290,28 @@ public Action CMD_GiveContract(int client, int args)
 	}
 	
 	char arg1[45];
-	GetCmdArg(1, arg1, sizeof(arg1 ));
+	GetCmdArg(1, arg1, sizeof(arg1));
 	
 	char target_name[MAX_TARGET_LENGTH];
 	int target_list[MAXPLAYERS], target_count;
 	bool tn_is_ml;
- 
+	
 	if ((target_count = ProcessTargetString(
-			arg1,
-			client,
-			target_list,
-			MAXPLAYERS,
-			COMMAND_FILTER_NO_BOTS,
-			target_name,
-			sizeof(target_name),
-			tn_is_ml)) <= 0)
+				arg1, 
+				client, 
+				target_list, 
+				MAXPLAYERS, 
+				COMMAND_FILTER_NO_BOTS, 
+				target_name, 
+				sizeof(target_name), 
+				tn_is_ml)) <= 0)
 	{
 		ReplyToTargetError(client, target_count);
 		return Plugin_Handled;
 	}
- 
+	
 	for (int i = 0; i < target_count; i++)
-		AssignateContract(target_list[i], true);
+	AssignateContract(target_list[i], true);
 	
 	CPrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_GiveSucess", target_count);
 	
@@ -390,6 +374,45 @@ public Action CMD_DisplayContractTop(int client, int args)
 }
 
 //Function
+public bool CheckKillMethod(int client)
+{
+	if (strlen(contractWeapon[client]) < 3)
+		return true;
+	
+	char sWeapon[100];
+	int aWeapon = GetEntPropEnt(client, Prop_Data, "m_hActiveWeapon");
+	if (IsValidEntity(aWeapon))
+		GetEntPropString(aWeapon, Prop_Data, "m_iClassname", sWeapon, sizeof(sWeapon));
+	
+	if (StrEqual(contractWeapon[client], sWeapon))
+	{
+		return true;
+	}
+	else
+	{
+		if (engineName == Engine_TF2)
+		{
+			if (StrEqual(contractWeapon[client], "PRIMARY") && aWeapon == GetPlayerWeaponSlot(client, TFWeaponSlot_Primary))
+				return true;
+			else if (StrEqual(contractWeapon[client], "SECONDARY") && aWeapon == GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary))
+				return true;
+			else if (StrEqual(contractWeapon[client], "MELEE") && aWeapon == GetPlayerWeaponSlot(client, TFWeaponSlot_Melee))
+				return true;
+		}
+		else if (engineName == Engine_CSGO || engineName == Engine_CSS)
+		{
+			if (StrEqual(contractWeapon[client], "PRIMARY") && aWeapon == GetPlayerWeaponSlot(client, CS_SLOT_PRIMARY))
+				return true;
+			else if (StrEqual(contractWeapon[client], "SECONDARY") && aWeapon == GetPlayerWeaponSlot(client, CS_SLOT_SECONDARY))
+				return true;
+			else if (StrEqual(contractWeapon[client], "MELEE") && aWeapon == GetPlayerWeaponSlot(client, CS_SLOT_KNIFE))
+				return true;
+		}
+	}
+	
+	return false;
+}
+
 public void LoadContracts(int client)
 {
 	char query[100];
@@ -413,7 +436,7 @@ public void SendContract(int client, Handle contractInfos)
 	GetTrieString(contractInfos, FIELD_CONTRACT_ACTION, cAction, sizeof(cAction));
 	GetTrieValue(contractInfos, FIELD_CONTRACT_OBJECTIVE, cObjective);
 	GetTrieValue(contractInfos, FIELD_CONTRACT_REWARD, cReward);
-	if(GetTrieString(contractInfos, FIELD_CONTRACT_WEAPON, cWeapon, sizeof(cWeapon)) && strlen(cWeapon) > 3)
+	if (GetTrieString(contractInfos, FIELD_CONTRACT_WEAPON, cWeapon, sizeof(cWeapon)) && strlen(cWeapon) > 3)
 	{
 		contractWeapon[client] = cWeapon;
 		Format(cWeapon, sizeof(cWeapon), " (%s)", cWeapon);
@@ -465,17 +488,17 @@ public void VerifyContract(int client)
 	char store[15];
 	GetConVarString(CVAR_UsuedStore, store, sizeof(store));
 	
-	if(StrEqual(store, STORE_ZEPHYRUS))
+	if (StrEqual(store, STORE_ZEPHYRUS))
 	{
 		Store_SetClientCredits(client, Store_GetClientCredits(client) + contractReward[client]);
 	}
-	else if(StrEqual(store, STORE_SMSTORE))
+	else if (StrEqual(store, STORE_SMSTORE))
 	{
 		int id[1];
 		id[0] = Store_GetClientAccountID(client);
 		Store_GiveCreditsToUsers(id, 1, contractReward[client]);
-	}	
-	else if(StrEqual(store, STORE_SMRPG))
+	}
+	else if (StrEqual(store, STORE_SMRPG))
 	{
 		SMRPG_SetClientExperience(client, SMRPG_GetClientExperience(client) + contractReward[client]);
 	}
@@ -490,12 +513,12 @@ public void SaveIntoDatabase(int client)
 	char steamid[30];
 	char clientName[45];
 	
-	if(!GetClientAuthId(client, AuthId_SteamID64, steamid, sizeof(steamid)))
+	if (!GetClientAuthId(client, AuthId_SteamID64, steamid, sizeof(steamid)))
 		return;
-		
+	
 	GetClientNameForDatabase(DATABASE_Contract, client, clientName, sizeof(clientName));
 	
-	if(IsInDatabase[client])
+	if (IsInDatabase[client])
 	{
 		Format(query, sizeof(query), QUERY_UPDATE_CONTRACTS, contractPoints[client], contractAccomplishedCount[client], clientName, steamid);
 		PrintToConsole(client, query);
@@ -532,9 +555,9 @@ public void AssignateContract(int client, bool force)
 		break;
 	}
 	
-	if(force)
+	if (force)
 	{
-		Handle TRIE_Contract = GetArrayCell(ARRAY_Contracts, GetRandomInt(0, GetArraySize(ARRAY_Contracts)-1));
+		Handle TRIE_Contract = GetArrayCell(ARRAY_Contracts, GetRandomInt(0, GetArraySize(ARRAY_Contracts) - 1));
 		GetTrieValue(TRIE_Contract, FIELD_CONTRACT_CHANCES, pourcent);
 		SendContract(client, TRIE_Contract);
 	}
@@ -579,9 +602,9 @@ public Action TMR_DistributeContracts(Handle tmr)
 	{
 		if (!IsValidClient(z) || IsInContract[z])
 			continue;
-			
+		
 		IntToString(GetClientTeam(z), team, sizeof(team));
-		if(StrContains(teams, team) == -1)
+		if (StrContains(teams, team) == -1)
 			continue;
 		
 		AssignateContract(z, false);
@@ -606,14 +629,14 @@ public MenuHandle_MainMenu(Handle menu, MenuAction menuAction, int client, int i
 
 public int MenuHandler_Top(Handle menu, MenuAction menuAction, int param1, int param2)
 {
-	if(menuAction == MenuAction_End)
+	if (menuAction == MenuAction_End)
 		CloseHandle(menu);
 }
 
 //Database related stuff
 public GotDatabase(Handle owner, Handle hndl, const char[] error, any data)
 {
-	if(hndl == INVALID_HANDLE)	
+	if (hndl == INVALID_HANDLE)
 	{
 		SetFailState("%t", "Database_Failure", error);
 		return;
@@ -631,7 +654,7 @@ public GotDatabase(Handle owner, Handle hndl, const char[] error, any data)
 	{
 		if (!IsValidClient(z))
 			continue;
-			
+		
 		LoadContracts(z);
 	}
 }
@@ -659,9 +682,9 @@ public void T_GetTop10(Handle db, Handle results, const char[] error, any data)
 	int points = 0;
 	int count = 7;
 	int accomplishedcount = 0;
-	while(SQL_FetchRow(results))
+	while (SQL_FetchRow(results))
 	{
-		if(count <= 0)
+		if (count <= 0)
 			break; //I could use MySQL but nah.
 		SQL_FetchString(results, 0, name, sizeof(name));
 		points = SQL_FetchInt(results, 1);
@@ -670,7 +693,7 @@ public void T_GetTop10(Handle db, Handle results, const char[] error, any data)
 		AddMenuItem(menu, "-", menuEntry, ITEMDRAW_DISABLED);
 		count--;
 	}
-		
+	
 	DisplayMenu(menu, client, 40);
 	
 	CloseHandle(results);
@@ -680,9 +703,9 @@ public void T_GetPlayerInfo(Handle db, Handle results, const char[] error, any d
 {
 	int client = data;
 	if (!IsValidClient(client))
-			return;
-			
-	if(!SQL_FetchRow(results))
+		return;
+	
+	if (!SQL_FetchRow(results))
 	{
 		IsInDatabase[client] = false;
 	}
@@ -732,7 +755,7 @@ stock bool ReadConfigFile()
 }
 
 //https://forums.alliedmods.net/showpost.php?p=2457161&postcount=9
-stock void GetClientNameForDatabase(Handle db, int client, char[] buffer, int bufferSize)//buffer[2*MAX_NAME_LENGTH+2])??
+stock void GetClientNameForDatabase(Handle db, int client, char[] buffer, int bufferSize) //buffer[2*MAX_NAME_LENGTH+2])??
 {
 	GetClientName(client, buffer, bufferSize);
 	SQL_EscapeString(db, buffer, buffer, bufferSize);
@@ -745,7 +768,7 @@ stock int GetPlayerCount()
 	{
 		if (IsValidClient(i))
 			count++;
-	}	
+	}
 	
 	return count;
 }
