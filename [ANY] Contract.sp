@@ -701,6 +701,9 @@ public void T_GetTop10(Handle db, Handle results, const char[] error, any data)
 
 public void T_GetPlayerInfo(Handle db, Handle results, const char[] error, any data)
 {
+	if(DATABASE_Contract == INVALID_HANDLE)
+		return;
+		
 	int client = data;
 	if (!IsValidClient(client))
 		return;
