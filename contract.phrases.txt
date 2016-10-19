@@ -4,6 +4,7 @@
 	"Done"
 	{
 		"en"		"Done!"
+		"de"		"Erledigt!"
 		"lv"		"Pabeigts!"
 		"hu"		"Kész!"
 		"pt-br"		"Feito!"
@@ -11,6 +12,7 @@
 	"Target_Invalid"
 	{
 		"en"		"Invalid target."
+		"de"		"Ungültiges Ziel."
 		"lv"		"Nepareiz mērķis."
 		"hu"		"Nem találom a célpontot."
 		"pt-br"		"Trajeto inválido."
@@ -19,6 +21,7 @@
 	"Database_reset"
 	{
 		"en"		"Reseting database..."
+		"de"		"Setze Datenbank zurück..."
 		"lv"		"Pārlādē datubāzi..."
 		"hu"		"Adatbázis nullázása..."
 		"pt-br"		"Reiniciando database..."
@@ -26,6 +29,7 @@
 	"Database_LoadingTop"
 	{
 		"en"		"Loading top contracts players..."
+		"de"		"Lade Top Auftrags Spieler..."
 		"lv"		"Ielādē kontraktoru topu..."
 		"hu"		"Legeredményesebb feladatvégrehajtók betöltése..."
 		"pt-br"		"Carregando jogadores com maiores contratos..."
@@ -34,6 +38,7 @@
 	{
 		"#format"	"{1:s}"
 		"en"		"Database failure: {1}";
+		"de"		"Datenbank Fehler: {1}";
 		"lv"		"Datubāzes kļūda: {1}"
 		"hu"		"Adatbázis hiba: {1}"
 		"pt-br"		"Falha na database: {1}"
@@ -42,6 +47,7 @@
 	{
 		"#format"	"{1:s}"
 		"en"		"{1} Unable to get the top 7 players now."
+		"de"		"{1} Die Top 7 Spieler können nicht geladen werden."
 		"lv"		"{1} Nav iespējams iegūt topa 7 spēlētājus pašlaik."
 		"hu"		"{1} A top 7 játékos adatai nem elérhetőek most."
 		"pt-br"		"{1} Não é possível obter os 7 maiores contratos agora."
@@ -50,6 +56,7 @@
 	"Contract_MTopSeven"
 	{
 		"en"		"Top 7 contract players"
+		"de"		"Top 7 Auftrags Spieler"
 		"lv"		"7 Labākie kontraktori"
 		"hu"		"Legjobb 7 feladatvégrehajtó"
 		"pt-br"		"TOP 7 Jogadores com maiores contratos"
@@ -58,6 +65,7 @@
 	{
 		"#format"	"{1:s},{2:i},{3:i}"
 		"en"		"{1} ({2} points, {3} contracts)"
+		"de"		"{1} ({2} Punkte, {3} Aufträge)"
 		"lv"		"{1} ({2} punkti, {3} kontrakti)"
 		"hu"		"{1} ({2} pont, {3} feladat)"
 		"pt-br"		"{1} ({2} ponto(s), {3} contrato(s))"
@@ -65,24 +73,29 @@
 	//menu
 	"menu_objectiv"
 	{
-		"en"		"Objectiv :"
+		"en"		"Objectiv:"
+		"de"		"Auftrag:"
 	}
 	"menu_accept"
 	{
-		"en"		"Do you accept it ?"
+		"en"		"Do you accept it?"
+		"de"		"Akzeptieren Sie es?"
 	}
 	"menu_yes"
 	{
 		"en"		"Yes, I can handle that."
+		"de"		"Ja, ich kann das."
 	}
 	"menu_no"
 	{
-		"en"		"No, HELL NO !"
+		"en"		"No, HELL NO!"
+		"de"		"Zur Hölle, NEIN!"
 	}
 	//Contract
 	"Contract_GiveUsage"
 	{
 		"en"		"Usage: sm_givecontract [PLAYER]"
+		"de"		"Benutze: sm_givecontract [PLAYER]"
 		"lv"		"Izmanto: sm_givecontract [SPĒLĒTĀJS]"
 		"hu"		"Használat: sm_givecontract [JÁTÉKOS]"
 		"pt-br"		"Modo de uso: sm_givecontract [JOGADOR]"
@@ -91,6 +104,7 @@
 	{
 		"#format"	"{1:i}"
 		"en"		"{1} players have sucessfully received a contract offer."
+		"de"		"{1} Spieler haben erfolgreich einen Aufrag erhalten."
 		"lv"		"{1} ir veiksmīgi pabeidzis kontraktu."
 		"hu"		"{1} kapott egy végrehajtandó feladatot."
 		"pt-br"		"{1} recebeu com sucesso uma oferta de contrato."
@@ -98,6 +112,7 @@
 	"Contract_None"
 	{
 		"en"		"You don't have any contract now."
+		"de"		"Du hast zur Zeit keinen Auftrag."
 		"lv"		"Tev nav neviena aktīva kontrakta pašlaik."
 		"hu"		"Nincs most semmi feladat a számodra."
 		"pt-br"		"Você não possui nenhum contrato no momento."
@@ -105,7 +120,8 @@
 	"Contract_Mission"
 	{
 		"#format"	"{1:s}"
-		"en"		"Your current mission is : {1}"
+		"en"		"Your current mission is: {1}"
+		"de"		"Dein derzeitiger Auftrag ist: {1}"
 		"lv"		"Tava pašreizējā misija ir: {1}"
 		"hu"		"A jelenlegi feladatod: {1}"
 		"pt-br"		"Sua missão atual é: {1}"
@@ -113,15 +129,17 @@
 	"Contract_Progress"
 	{
 		"#format"	"{1:i},{2:i}"
-		"en"		"Your contract progress is : {red}{1}{default}/{red}{2}"
-		"lv"		"Tavs kontrakta progress ir : {red}{1}{default}/{red}{2}"
-		"hu"		"Feladatod állapota : {red}{1}{default}/{red}{2}"
+		"en"		"Your contract progress is: {red}{1}{default}/{red}{2}"
+		"de"		"Dein Auftrags Fortschritt: {red}{1}{default}/{red}{2}"
+		"lv"		"Tavs kontrakta progress ir: {red}{1}{default}/{red}{2}"
+		"hu"		"Feladatod állapota: {red}{1}{default}/{red}{2}"
 		"pt-br"		"Seu progresso atual do contrato é: {red}{1}{default}/{red}{2}"
 	}
 	"Contract_Reward"
 	{
 		"#format"	"{1:i}"
 		"en"		"You will be rewarded with {red}{1}{default} credits."
+		"de"		"Du bekommst {red}{1}{default} credits als Belohnung."
 		"lv"		"Tevi atalgos ar {red}{1}{default} kredītiem."
 		"hu"		"Jutalmad {red}{1}{default} pont lesz."
 		"pt-br"		"Você será recompensado com {red}{1}{default} credito(s)."
@@ -130,6 +148,7 @@
 	{
 		"#format"	"{1:i},{2:i}"
 		"en"		"You have {red}{1}{default} contract completed ({red}{2}{default} points)."
+		"de"		"Du hast {red}{1}{default} Aufträge abgeschlossen ({red}{2}{default} Punkte)."
 		"lv"		"Tev ir {red}{1}{default} kontrakti izpildīti ({red}{2}{default} points)."
 		"hu"		"{red}{1}{default} feladatot teljesítettél ({red}{2}{default} pontért)."
 		"pt-br"		"Você possui {red}{1}{default} contrato(s) completos ({red}{2}{default} ponto(s))."
@@ -138,6 +157,7 @@
 	{
 		"#format"	"{1:s},{2:i},{3:i}"
 		"en"		"{1} have {red}{2}{default} contract completed ({red}{3}{default} points)."
+		"de"		"{1} hat {red}{2}{default} Aufträge abgeschlossen ({red}{3}{default} Punkte)."
 		"lv"		"{1} ir {red}{2}{default} kontrakti pabeigti ({red}{3}{default} points)."
 		"hu"		"{1} {red}{2}{default} feladatot teljesített ({red}{3}{default} pontért)."
 		"pt-br"		"{1} possui {red}{2}{default} contrato(s) completos ({red}{3}{default} ponto(s))."
@@ -145,6 +165,7 @@
 	"Contract_New"
 	{
 		"en"		"NEW CONTRACT"
+		"de"		"NEUE AUFTRÄGE"
 		"lv"		"JAUNS KONTRAKTS"
 		"hu"		"ÚJ FELADAT"
 		"pt-br"		"NOVO CONTRATO"
@@ -152,6 +173,7 @@
 	"Contract_ThankYou"
 	{
 		"en"		"You sucessfully did your contract, thank you."
+		"de"		"Du hast deinen Auftrag erfolgreich abgeschlossen, Danke."
 		"lv"		"Kontrakt veiksmīgi pabeigts."
 		"hu"		"Feladatodat sikeresen végrehajtottad. Köszönjük."
 		"pt-br"		"Você fez com sucesso o seu contrato, parabéns."
@@ -160,6 +182,7 @@
 	{
 		"#format"	"{1:i}"
 		"en"		"{red}{1}{default} has been added to your balance."
+		"de"		"{red}{1}{default} wurden Deinem Konto hinzugefügt."
 		"lv"		"{red}{1}{default} ir pievienoti tavai bilancei."
 		"hu"		"{red}{1}{default} hozzáadva az egyenlegedhez."
 		"pt-br"		"{red}{1}{default} ponto(s) foram adicionados em seu saldo."
@@ -169,6 +192,7 @@
 	{
 		"#format"	"{1:i}"
 		"en"		"Walk {1} meters!"
+		"de"		"Laufe {1} Meter!"
 		"lv"		"Noej {1} metrus!"
 		"hu"		"Sétálj {1} métert!"
 		"pt-br"		"Caminhe {1} metro(s)!"
@@ -177,6 +201,7 @@
 	{
 		"#format"	"{1:i}"
 		"en"		"Kill {1} players!"
+		"de"		"Töte {1} Spieler!"
 		"lv"		"Nogalini {1} spēlētājus!"
 		"hu"		"Ölj meg {1} játékost!"
 		"pt-br"		"Assassine {1} jogador(es)!"
@@ -185,6 +210,7 @@
 	{
 		"#format"	"{1:i}"
 		"en"		"Do {1} headshots!"
+		"de"		"Erziele {1} headshots!"
 		"lv"		"Izdari {1} trāpijumus galvā!"
 		"hu"		"Érj el {1} fejlövést!"
 		"pt-br"		"Realize {1} HEADSHOT(S)!"
@@ -193,6 +219,7 @@
 	{
 		"#format"	"{1:i}"
 		"en"		"Die {1} times!"
+		"en"		"Sterbe {1} mal!"
 		"lv"		"Nomirsti {1} reizes!"
 		"hu"		"Halj meg {1} alkalommal!"
 		"pt-br"		"Morra {1} vez(es)"
