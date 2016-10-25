@@ -1,6 +1,7 @@
+#include <multicolors>
+#include <clientprefs>
 #include <sourcemod>
 #include <sdktools>
-#include <multicolors>
 #include <sdkhooks>
 #undef REQUIRE_PLUGIN
 #include <zephyrus_store>
@@ -45,6 +46,7 @@ Handle CVAR_MinimumPlayers;
 Handle CVAR_UsuedStore;
 
 Handle TIMER_ContractsDistribution;
+Handle COOKIE_CurrentContract;
 Handle DATABASE_Contract;
 Handle ARRAY_Contracts;
 
@@ -61,13 +63,13 @@ float distance;
 float newPosition[3];
 float lastPosition[MAXPLAYERS + 1][3];
 
-char action[10];
+char action[50];
 char reward[10];
 char weapon[10];
 char chances[10];
 char objective[10];
-char contractName[100];
-char contractType[MAXPLAYERS + 1][10];
+char contractType[MAXPLAYERS + 1][50];
+char contractName[MAXPLAYERS + 1][100];
 char contractWeapon[MAXPLAYERS + 1][100];
 char contractDescription[MAXPLAYERS + 1][100];
 
@@ -95,8 +97,8 @@ public void OnPluginStart()
 	CVAR_TeamRestrictions = CreateConVar("sm_contract_teams", "2;3", "Team index wich can get contract. 2 = RED/T 3 = BLU/CT");
 	CVAR_UsuedStore = CreateConVar("sm_contract_store_select", "NONE", "NONE=No store usage/ZEPHYRUS=use zephyrus store/SMSTORE=use sourcemod store");
 	CVAR_MinimumPlayers = CreateConVar("sm_contract_minimum_players", "2", "How much player needed before receving an contract.", _, true, 1.0);
-	
-	HookEvent("player_death", OnPlayerDeath);
+
+	COOKIE_CurrentContract = RegClientCookie("Contract_CurrentContractName", "Contain the name of the current contract.", CookieAccess_Private);
 	
 	engineName = GetEngineVersion();
 	
@@ -110,13 +112,26 @@ public void OnPluginStart()
 	{
 		if (!IsValidClient(z))
 			continue;
-		
+			
 		GetClientAbsOrigin(z, lastPosition[z]);
 		SDKHook(z, SDKHook_OnTakeDamage, OnTakeDamage);
-	}
+	}	
+	
+	HookEvent("player_death", OnPlayerDeath);
 	
 	LoadTranslations("common.phrases");
 	LoadTranslations("contract.phrases");
+}
+
+public void OnPluginEnd()
+{
+	for (int z = 0; z < MaxClients; z++)
+	{
+		if (!IsValidClient(z) || !IsInContract[z])
+			continue;
+			
+		SaveCookie(z);
+	}
 }
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
@@ -130,9 +145,63 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	return APLRes_Success;
 }
 
+public void SaveCookie(int client)
+{
+	if(IsInContract[client])
+	{
+		char sCookieValue[100];
+		Format(sCookieValue, sizeof(sCookieValue), "%s¢%i", contractName[client], contractProgress[client]);
+		SetClientCookie(client, COOKIE_CurrentContract, sCookieValue);
+	}
+}
+
+public OnClientCookiesCached(client)
+{
+    char sCookieValue[100];
+    char tmpContractName[100];
+    char sContractNameValue[2][100];
+    GetClientCookie(client, COOKIE_CurrentContract, sCookieValue, sizeof(sCookieValue));
+    
+    if(StrEqual(sCookieValue, "-"))
+    	return;
+    	
+    if(StrContains(sCookieValue, "¢") == -1)
+    {
+    	SetClientCookie(client, COOKIE_CurrentContract, "-");
+    	return;
+   	}
+    	
+    ExplodeString(sCookieValue, "¢", sContractNameValue, sizeof sContractNameValue, sizeof sContractNameValue[]);
+    	
+    int contractCount = GetArraySize(ARRAY_Contracts);
+	while (contractCount > 0)
+	{
+		contractCount--;
+		
+		Handle TRIE_Contract = GetArrayCell(ARRAY_Contracts, contractCount);
+		GetTrieString(TRIE_Contract, FIELD_CONTRACT_NAME, tmpContractName, sizeof(tmpContractName));
+		
+		if(StrEqual(tmpContractName, sContractNameValue[0]))
+		{
+			AssignateContract(client, true, contractCount);
+			contractProgress[client] = StringToInt(sContractNameValue[1]);
+			break;
+		}
+	}
+}  
+
 public void OnConfigsExecuted()
 {
 	ReadConfigFile();
+	
+	for (int z = 0; z < MaxClients; z++)
+	{
+		if (!IsValidClient(z))
+			continue;
+			
+		if (AreClientCookiesCached(z))        
+        	OnClientCookiesCached(z);    
+    }
 	
 	char dbconfig[45];
 	GetConVarString(CVAR_DBConfigurationName, dbconfig, sizeof(dbconfig));
@@ -171,6 +240,7 @@ public void OnClientDisconnect(int client)
 		}
 	}
 	
+	SaveCookie(client);
 	SaveIntoDatabase(client);
 }
 
@@ -232,19 +302,19 @@ public void OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 }
 
 public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &damage, int &damagetype)
-{
+{	
 	if (!IsValidClient(victim) || (!IsInContract[victim] && !IsInContract[attacker]))
 		return Plugin_Continue;
 	
 	if (IsInContract[victim] && StrEqual(contractType[victim], "TAKE_DAMAGE"))
 	{
-		contractProgress[victim] += damage;
+		contractProgress[victim] += RoundToCeil(damage);
 		VerifyContract(victim);
 	}
 	
 	if(IsInContract[attacker] && StrEqual(contractType[attacker], "DEAL_DAMAGE"))
 	{
-		contractProgress[attacker] += damage;
+		contractProgress[attacker] += RoundToCeil(damage);
 		VerifyContract(attacker);
 	}
 	
@@ -307,11 +377,11 @@ public Action CMD_GiveContract(int client, int args)
 				tn_is_ml)) <= 0)
 	{
 		ReplyToTargetError(client, target_count);
-		return Plugin_Handled;
+		return Plugin_Continue;
 	}
-	
+	PrintToServer("test");
 	for (int i = 0; i < target_count; i++)
-	AssignateContract(target_list[i], true);
+		AssignateContract(target_list[i], true, -1);
 	
 	CPrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_GiveSucess", target_count);
 	
@@ -423,11 +493,11 @@ public void LoadContracts(int client)
 	SQL_TQuery(DATABASE_Contract, T_GetPlayerInfo, query, client);
 }
 
-public void SendContract(int client, Handle contractInfos)
+public void SendContract(int client, Handle contractInfos, bool forceYES)
 {
 	char sObjectiv[100];
 	char cWeapon[100];
-	char cAction[10];
+	char cAction[50];
 	char cName[100];
 	int cObjective;
 	int cReward;
@@ -454,23 +524,31 @@ public void SendContract(int client, Handle contractInfos)
 	contractReward[client] = cReward;
 	contractProgress[client] = 0;
 	contractObjective[client] = cObjective;
-	contractType[client] = cAction;
+	Format(contractType[client], sizeof(contractType[]), cAction);
+	Format(contractName[client], sizeof(contractName[]), cName);
 	Format(contractDescription[client], sizeof(contractDescription[]), "%s - %s", cName, sObjectiv);
 	
-	char phrases[100];
-	Format(cName, sizeof(cName), "%t - %s", "Contract_New", cName);
-	Panel menu = new Panel();
-	SetPanelTitle(menu, cName);
-	Format(phrases, sizeof(phrases), "%t", "menu_objectiv");
-	DrawPanelItem(menu, phrases, ITEMDRAW_RAWLINE);
-	DrawPanelItem(menu, sObjectiv, ITEMDRAW_RAWLINE);
-	Format(phrases, sizeof(phrases), "%t", "menu_accept");
-	DrawPanelItem(menu, phrases, ITEMDRAW_RAWLINE);
-	Format(phrases, sizeof(phrases), "%t", "menu_yes");
-	DrawPanelItem(menu, phrases);
-	Format(phrases, sizeof(phrases), "%t", "menu_no");
-	DrawPanelItem(menu, phrases);
-	SendPanelToClient(menu, client, MenuHandle_MainMenu, MENU_TIME_FOREVER);
+	if(!forceYES)
+	{
+		char phrases[100];
+		Format(cName, sizeof(cName), "%t - %s", "Contract_New", cName);
+		Panel menu = new Panel();
+		SetPanelTitle(menu, cName);
+		Format(phrases, sizeof(phrases), "%t", "menu_objectiv");
+		DrawPanelItem(menu, phrases, ITEMDRAW_RAWLINE);
+		DrawPanelItem(menu, sObjectiv, ITEMDRAW_RAWLINE);
+		Format(phrases, sizeof(phrases), "%t", "menu_accept");
+		DrawPanelItem(menu, phrases, ITEMDRAW_RAWLINE);
+		Format(phrases, sizeof(phrases), "%t", "menu_yes");
+		DrawPanelItem(menu, phrases);
+		Format(phrases, sizeof(phrases), "%t", "menu_no");
+		DrawPanelItem(menu, phrases);
+		SendPanelToClient(menu, client, MenuHandle_MainMenu, MENU_TIME_FOREVER);
+	}
+	else
+	{
+		IsInContract[client] = true;
+	}
 }
 
 public void VerifyContract(int client)
@@ -505,6 +583,8 @@ public void VerifyContract(int client)
 	
 	CPrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_ThankYou");
 	CPrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_ThankReward", contractReward[client]);
+	
+	SetClientCookie(client, COOKIE_CurrentContract, "-");
 }
 
 public void SaveIntoDatabase(int client)
@@ -532,34 +612,49 @@ public void SaveIntoDatabase(int client)
 	}
 }
 
-public void AssignateContract(int client, bool force)
+public void AssignateContract(int client, bool force, int contractID)
 {
 	float pourcent = GetConVarFloat(CVAR_ChanceGetContract) / 100.0;
 	
 	if (!force && GetRandomFloat(0.0, 1.0) < pourcent)
 		return;
 	
-	int contractCount = GetArraySize(ARRAY_Contracts);
-	while (contractCount > 0)
+	if(contractID == -1)
 	{
-		contractCount--;
+		int contractCount = GetArraySize(ARRAY_Contracts);
+		while (contractCount > 0)
+		{
+			contractCount--;
+			
+			Handle TRIE_Contract = GetArrayCell(ARRAY_Contracts, contractCount);
+			GetTrieValue(TRIE_Contract, FIELD_CONTRACT_CHANCES, pourcent);
+			
+			if (GetRandomFloat(0.0, 1.0) > pourcent)
+				continue;
+			
+			SendContract(client, TRIE_Contract, false);
+			
+			break;
+		}
 		
-		Handle TRIE_Contract = GetArrayCell(ARRAY_Contracts, contractCount);
-		GetTrieValue(TRIE_Contract, FIELD_CONTRACT_CHANCES, pourcent);
-		
-		if (GetRandomFloat(0.0, 1.0) > pourcent)
-			continue;
-		
-		SendContract(client, TRIE_Contract);
-		
-		break;
+		if (force)
+		{
+			Handle TRIE_Contract = GetArrayCell(ARRAY_Contracts, GetRandomInt(0, GetArraySize(ARRAY_Contracts) - 1));
+			GetTrieValue(TRIE_Contract, FIELD_CONTRACT_CHANCES, pourcent);
+			SendContract(client, TRIE_Contract, false);
+		}
 	}
-	
-	if (force)
+	else
 	{
-		Handle TRIE_Contract = GetArrayCell(ARRAY_Contracts, GetRandomInt(0, GetArraySize(ARRAY_Contracts) - 1));
+		if(contractID < 0 || contractID > GetArraySize(ARRAY_Contracts)-1)
+		{
+			SetFailState("INVALID CONTRACT ID SUPPLIED !");
+			return;
+		}
+			
+		Handle TRIE_Contract = GetArrayCell(ARRAY_Contracts, contractID);
 		GetTrieValue(TRIE_Contract, FIELD_CONTRACT_CHANCES, pourcent);
-		SendContract(client, TRIE_Contract);
+		SendContract(client, TRIE_Contract, true);
 	}
 }
 
@@ -607,7 +702,7 @@ public Action TMR_DistributeContracts(Handle tmr)
 		if (StrContains(teams, team) == -1)
 			continue;
 		
-		AssignateContract(z, false);
+		AssignateContract(z, false, -1);
 	}
 }
 
@@ -733,9 +828,10 @@ stock bool ReadConfigFile()
 	if (!KvGotoFirstSubKey(kv))
 		return;
 	
+	char cName[100];
 	do
 	{
-		KvGetString(kv, FIELD_CONTRACT_NAME, contractName, sizeof(contractName));
+		KvGetString(kv, FIELD_CONTRACT_NAME, cName, sizeof(cName));
 		KvGetString(kv, FIELD_CONTRACT_ACTION, action, sizeof(action));
 		KvGetString(kv, FIELD_CONTRACT_OBJECTIVE, objective, sizeof(objective));
 		KvGetString(kv, FIELD_CONTRACT_CHANCES, chances, sizeof(chances));
@@ -743,7 +839,7 @@ stock bool ReadConfigFile()
 		KvGetString(kv, FIELD_CONTRACT_WEAPON, weapon, sizeof(weapon));
 		
 		Handle tmpTrie = CreateTrie();
-		SetTrieString(tmpTrie, FIELD_CONTRACT_NAME, contractName, false);
+		SetTrieString(tmpTrie, FIELD_CONTRACT_NAME, cName, false);
 		SetTrieString(tmpTrie, FIELD_CONTRACT_ACTION, action, false);
 		SetTrieValue(tmpTrie, FIELD_CONTRACT_OBJECTIVE, StringToInt(objective), false);
 		SetTrieValue(tmpTrie, FIELD_CONTRACT_CHANCES, (StringToFloat(chances) / 100.0), false);
