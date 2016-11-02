@@ -6,6 +6,7 @@
 #undef REQUIRE_PLUGIN
 #include <zephyrus_store>
 #include <smrpg>
+#include <shavit>
 #include <smstore/store/store-backend>
 #undef REQUIRE_EXTENSIONS
 #include <tf2_stocks>
@@ -68,7 +69,7 @@ char reward[10];
 char weapon[10];
 char chances[10];
 char objective[10];
-char contractType[MAXPLAYERS + 1][50];
+char contractType[MAXPLAYERS + 1][100];
 char contractName[MAXPLAYERS + 1][100];
 char contractWeapon[MAXPLAYERS + 1][100];
 char contractDescription[MAXPLAYERS + 1][100];
@@ -110,7 +111,7 @@ public void OnPluginStart()
 	
 	for (int z = 0; z < MaxClients; z++)
 	{
-		if (!IsValidClient(z))
+		if (!IsValidClientContract (z))
 			continue;
 		
 		GetClientAbsOrigin(z, lastPosition[z]);
@@ -127,7 +128,7 @@ public void OnPluginEnd()
 {
 	for (int z = 0; z < MaxClients; z++)
 	{
-		if (!IsValidClient(z) || !IsInContract[z])
+		if (!IsValidClientContract (z) || !IsInContract[z])
 			continue;
 		
 		SaveCookie(z);
@@ -155,7 +156,7 @@ public void SaveCookie(int client)
 	}
 }
 
-public OnClientCookiesCached(client)
+public void OnClientCookiesCached(int client)
 {
 	char sCookieValue[100];
 	char tmpContractName[100];
@@ -196,7 +197,7 @@ public void OnConfigsExecuted()
 	
 	for (int z = 0; z < MaxClients; z++)
 	{
-		if (!IsValidClient(z))
+		if (!IsValidClientContract (z))
 			continue;
 		
 		if (AreClientCookiesCached(z))
@@ -222,14 +223,14 @@ public void OnClientConnected(int client)
 		LoadContracts(client);
 }
 
-public OnClientPutInServer(client)
+public void OnClientPutInServer(int client)
 {
 	SDKHook(client, SDKHook_OnTakeDamage, OnTakeDamage);
 }
 
 public void OnClientDisconnect(int client)
 {
-	if (!IsValidClient(client))
+	if (!IsValidClientContract (client))
 		return;
 	
 	if (TIMER_ContractsDistribution != INVALID_HANDLE)
@@ -251,7 +252,7 @@ public void OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 	int client = GetClientOfUserId(GetEventInt(event, "userid"));
 	int attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
 	
-	if (!IsValidClient(client) || (!IsInContract[client] && !IsInContract[attacker]))
+	if (!IsValidClientContract (client) || (!IsInContract[client] && !IsInContract[attacker]))
 		return;
 	
 	if (StrEqual(contractType[attacker], "HEADSHOT"))
@@ -304,19 +305,28 @@ public void OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 
 public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &damage, int &damagetype)
 {
-	if (IsValidClient(victim) && IsInContract[victim] && StrEqual(contractType[victim], "TAKE_DAMAGE"))
+	if (IsValidClientContract (victim) && IsInContract[victim] && StrEqual(contractType[victim], "TAKE_DAMAGE"))
 	{
 		contractProgress[victim] += RoundToCeil(damage);
 		VerifyContract(victim);
 	}
 	
-	if (IsValidClient(attacker) && IsInContract[attacker] && StrEqual(contractType[attacker], "DEAL_DAMAGE"))
+	if (IsValidClientContract (attacker) && IsInContract[attacker] && StrEqual(contractType[attacker], "DEAL_DAMAGE"))
 	{
 		contractProgress[attacker] += RoundToCeil(damage);
 		VerifyContract(attacker);
 	}
 	
 	return Plugin_Continue;
+}
+
+public void Shavit_OnFinish(int client, BhopStyle style, float time, int jumps, int strafes, float sync)
+{
+	if (IsInContract[client] && StrEqual(contractType[client], "FINISH_BHOPSHAVIT"))
+	{
+		contractProgress[client]++;
+		VerifyContract(client);
+	}
 }
 
 //Command callback.
@@ -388,7 +398,7 @@ public Action CMD_GiveContract(int client, int args)
 
 public Action CMD_DisplayContractInfo(int client, int args)
 {
-	if (!IsValidClient(client))
+	if (!IsValidClientContract (client))
 		return Plugin_Handled;
 	
 	if (!IsInContract[client])
@@ -406,7 +416,7 @@ public Action CMD_DisplayContractInfo(int client, int args)
 
 public Action CMD_DisplayContractRank(int client, int args)
 {
-	if (!IsValidClient(client))
+	if (!IsValidClientContract (client))
 		return Plugin_Handled;
 	
 	int target = -1;
@@ -659,7 +669,7 @@ public void AssignateContract(int client, bool force, int contractID)
 //Timer callback
 public Action TMR_UpdateHUD(Handle tmr)
 {
-	for (new i = 1; i <= MaxClients; i++)
+	for (int i = 1; i <= MaxClients; i++)
 	{
 		if (IsClientInGame(i) && IsPlayerAlive(i) && IsInContract[i])
 		{
@@ -676,7 +686,7 @@ public Action TMR_UpdateHUD(Handle tmr)
 	
 	for (int z = 0; z < MaxClients; z++)
 	{
-		if (!IsInContract[z] || !IsValidClient(z))
+		if (!IsInContract[z] || !IsValidClientContract (z))
 			continue;
 		
 		SetHudTextParams(0.02, 0.0, 0.8, 255, 0, 0, 200);
@@ -693,7 +703,7 @@ public Action TMR_DistributeContracts(Handle tmr)
 	GetConVarString(CVAR_TeamRestrictions, teams, sizeof(teams));
 	for (int z = 0; z < MaxClients; z++)
 	{
-		if (!IsValidClient(z) || IsInContract[z])
+		if (!IsValidClientContract (z) || IsInContract[z])
 			continue;
 		
 		IntToString(GetClientTeam(z), team, sizeof(team));
@@ -705,7 +715,7 @@ public Action TMR_DistributeContracts(Handle tmr)
 }
 
 //Menu Handlers
-public MenuHandle_MainMenu(Handle menu, MenuAction menuAction, int client, int itemIndex)
+public int MenuHandle_MainMenu(Handle menu, MenuAction menuAction, int client, int itemIndex)
 {
 	if (menuAction == MenuAction_Select)
 	{
@@ -727,7 +737,7 @@ public int MenuHandler_Top(Handle menu, MenuAction menuAction, int param1, int p
 }
 
 //Database related stuff
-public GotDatabase(Handle owner, Handle hndl, const char[] error, any data)
+public void GotDatabase(Handle owner, Handle hndl, const char[] error, any data)
 {
 	if (hndl == INVALID_HANDLE)
 	{
@@ -746,7 +756,7 @@ public GotDatabase(Handle owner, Handle hndl, const char[] error, any data)
 		
 		for (int z = 1; z < MaxClients; z++)
 		{
-			if (!IsValidClient(z))
+			if (!IsValidClientContract (z))
 				continue;
 			
 			LoadContracts(z);
@@ -800,7 +810,7 @@ public void T_GetPlayerInfo(Handle db, Handle results, const char[] error, any d
 		return;
 	
 	int client = data;
-	if (!IsValidClient(client))
+	if (!IsValidClientContract (client))
 		return;
 	
 	if (!SQL_FetchRow(results))
@@ -865,14 +875,14 @@ stock int GetPlayerCount()
 	int count = 0;
 	for (int i = 0; i < MaxClients; i++)
 	{
-		if (IsValidClient(i))
+		if (IsValidClientContract (i))
 			count++;
 	}
 	
 	return count;
 }
 
-stock bool IsValidClient(iClient, bool bReplay = true)
+stock bool IsValidClientContract (int iClient, bool bReplay = true)
 {
 	if (iClient <= 0 || iClient > MaxClients)
 		return false;
