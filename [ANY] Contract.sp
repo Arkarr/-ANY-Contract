@@ -252,10 +252,10 @@ public void OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 	int client = GetClientOfUserId(GetEventInt(event, "userid"));
 	int attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
 	
-	if (!IsValidClientContract (client) || (!IsInContract[client] && !IsInContract[attacker]))
+	if (!IsValidClientContract (client))
 		return;
 	
-	if (StrEqual(contractType[attacker], "HEADSHOT"))
+	if (IsInContract[attacker] && StrEqual(contractType[attacker], "HEADSHOT"))
 	{
 		int customkill = GetEventInt(event, "customkill");
 		
@@ -279,7 +279,8 @@ public void OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 			}
 		}
 	}
-	else if (StrEqual(contractType[client], "DIE"))
+	
+	if (IsInContract[client] && StrEqual(contractType[client], "DIE"))
 	{
 		if (CheckKillMethod(client))
 			contractProgress[client]++;
@@ -294,7 +295,8 @@ public void OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 		
 		VerifyContract(client);
 	}
-	else if (StrEqual(contractType[attacker], "KILL"))
+	
+	if (IsInContract[attacker] && StrEqual(contractType[attacker], "KILL"))
 	{
 		if (CheckKillMethod(attacker))
 			contractProgress[attacker]++;
@@ -562,6 +564,9 @@ public void SendContract(int client, Handle contractInfos, bool forceYES)
 public void VerifyContract(int client)
 {
 	if (contractProgress[client] < contractObjective[client])
+		return;
+		
+	if (!IsInContract[client])
 		return;
 	
 	IsInContract[client] = false;
