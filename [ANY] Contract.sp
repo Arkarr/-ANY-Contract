@@ -43,6 +43,7 @@ EngineVersion engineName;
 Handle CVAR_DBConfigurationName;
 Handle CVAR_ChanceGetContract;
 Handle CVAR_TeamRestrictions;
+Handle CVAR_ContractInterval;
 Handle CVAR_MinimumPlayers;
 Handle CVAR_UsuedStore;
 
@@ -98,13 +99,14 @@ public void OnPluginStart()
 	CVAR_TeamRestrictions = CreateConVar("sm_contract_teams", "2;3", "Team index wich can get contract. 2 = RED/T 3 = BLU/CT");
 	CVAR_UsuedStore = CreateConVar("sm_contract_store_select", "NONE", "NONE=No store usage/ZEPHYRUS=use zephyrus store/SMSTORE=use sourcemod store");
 	CVAR_MinimumPlayers = CreateConVar("sm_contract_minimum_players", "2", "How much player needed before receving an contract.", _, true, 1.0);
+	CVAR_ContractInterval = CreateConVar("sm_contract_interval", "300", "Time (in seconds) before giving a new contract if any.", _, true, 1.0);
 	
 	COOKIE_CurrentContract = RegClientCookie("Contract_CurrentContractName", "Contain the name of the current contract.", CookieAccess_Private);
 	
 	engineName = GetEngineVersion();
 	
 	if (GetConVarInt(CVAR_MinimumPlayers) <= GetPlayerCount())
-		TIMER_ContractsDistribution = CreateTimer(300.0, TMR_DistributeContracts, _, TIMER_REPEAT);
+		TIMER_ContractsDistribution = CreateTimer(GetConVarFloat(CVAR_ContractInterval), TMR_DistributeContracts, _, TIMER_REPEAT);
 	
 	if (engineName != Engine_CSS || engineName != Engine_CSGO)
 		CreateTimer(0.5, TMR_UpdateHUD, _, TIMER_REPEAT);
@@ -214,7 +216,7 @@ public void OnClientConnected(int client)
 	if (TIMER_ContractsDistribution == INVALID_HANDLE)
 	{
 		if (GetConVarInt(CVAR_MinimumPlayers) <= GetPlayerCount())
-			TIMER_ContractsDistribution = CreateTimer(300.0, TMR_DistributeContracts, _, TIMER_REPEAT);
+			TIMER_ContractsDistribution = CreateTimer(GetConVarFloat(CVAR_ContractInterval), TMR_DistributeContracts, _, TIMER_REPEAT);
 	}
 	
 	IsInContract[client] = false;
