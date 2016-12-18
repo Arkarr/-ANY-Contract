@@ -107,6 +107,8 @@ public void OnPluginStart()
 	CVAR_MinimumPlayers = CreateConVar("sm_contract_minimum_players", "2", "How much player needed before receving an contract.", _, true, 1.0);
 	CVAR_ContractInterval = CreateConVar("sm_contract_interval", "300", "Time (in seconds) before giving a new contract if any.", _, true, 1.0);
 	
+	AutoExecConfig(true, "contract");
+	
 	COOKIE_CurrentContract = RegClientCookie("Contract_CurrentContractName", "Contain the name of the current contract.", CookieAccess_Private);
 	
 	engineName = GetEngineVersion();
@@ -318,10 +320,13 @@ public void OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 	
 	if (IsInContract[attacker] && StrEqual(contractType[attacker], "WARDEN_KILLS"))
 	{
-		if (CheckKillMethod(attacker) && warden_iswarden(attacker))
+		if (warden_iswarden(attacker))
 		{
-			contractProgress[attacker]++;
-			VerifyContract(attacker);
+			if (CheckKillMethod(attacker))
+			{
+				contractProgress[attacker]++;
+				VerifyContract(attacker);
+			}
 		}
 	}
 }
@@ -333,23 +338,26 @@ public void OnRoundEnd(Handle event, const char[] name, bool dontBroadcast)
 	
 	for (int i = 1; i <= MaxClients; i++)
 	{
-		if (!IsValidClient(i) || !IsInContract[i] || !IsPlayerAlive(i))
-			return;
-		
-		if (StrEqual(contractType[i], "WARDEN_ROUNDS"))
+		if (IsValidClient(i) && IsInContract[i] && IsPlayerAlive(i))
 		{
-			if (warden_iswarden(i))
+			if (StrEqual(contractType[i], "WARDEN_ROUNDS"))
 			{
-				contractProgress[i]++;
-				VerifyContract(i);
+				if (warden_iswarden(i))
+				{
+					contractProgress[i]++;
+					VerifyContract(i);
+				}
 			}
-		}
-		if (StrEqual(contractType[i], "LAST_REQUEST") && g_bIsLR)
-		{
-			if (GetClientTeam(i) == CS_TEAM_T)
+			if (g_bIsLR)
 			{
-				contractProgress[i]++;
-				VerifyContract(i);
+				if (StrEqual(contractType[i], "LAST_REQUEST"))
+				{
+					if (GetClientTeam(i) == CS_TEAM_T)
+					{
+						contractProgress[i]++;
+						VerifyContract(i);
+					}
+				}
 			}
 		}
 	}
