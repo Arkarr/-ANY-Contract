@@ -7,6 +7,7 @@
 #include <warden>
 #include <hosties>
 #include <lastrequest>
+#include <myjailshop>
 #include <smstore/store/store-backend>
 #include <smrpg>
 #include <shavit>
@@ -40,6 +41,7 @@
 #define STORE_ZEPHYRUS					"ZEPHYRUS"
 #define STORE_SMSTORE					"SMSTORE"
 #define STORE_SMRPG						"SMRPG"
+#define STORE_MYJS						"MYJS"
 
 EngineVersion engineName;
 
@@ -654,6 +656,10 @@ public void VerifyContract(int client)
 	else if (StrEqual(store, STORE_SMRPG))
 	{
 		SMRPG_SetClientExperience(client, SMRPG_GetClientExperience(client) + contractReward[client]);
+	}
+	else if (StrEqual(store, STORE_MYJS))
+	{
+		MyJailShop_SetCredits(client, MyJailShop_GetCredits(client)+contractReward[client]);
 	}
 	
 	CPrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_ThankYou");
