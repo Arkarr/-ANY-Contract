@@ -1,22 +1,28 @@
-#include <multicolors>
 #include <clientprefs>
 #include <sourcemod>
 #include <sdktools>
 #include <sdkhooks>
 #undef REQUIRE_PLUGIN
 #include <zephyrus_store>
+#include <warden>
+#include <hosties>
+#include <lastrequest>
+#include <myjailshop>
+#include <smstore/store/store-backend>
 #include <smrpg>
 #include <shavit>
-#include <smstore/store/store-backend>
+#pragma newdecls optional
 #undef REQUIRE_EXTENSIONS
 #include <tf2_stocks>
 #include <cstrike>
+#include <multicolors>
+#pragma newdecls required
 
 //Plugin Info
 #define PLUGIN_TAG						"{green}[{red}Contract{green}]{default}"
 #define PLUGIN_NAME						"[ANY] Contract"
-#define PLUGIN_AUTHOR 					"Arkarr"
-#define PLUGIN_VERSION 					"1.5"
+#define PLUGIN_AUTHOR 					"Arkarr" //warden & lastrequest by shanapu
+#define PLUGIN_VERSION 					"1.6"
 #define PLUGIN_DESCRIPTION 				"Assign contract to player and let them a certain period of time to do it to earn extra credits."
 //KeyValue fields
 #define FIELD_CONTRACT_NAME 			"Contract Name"
@@ -37,6 +43,7 @@
 #define STORE_ZEPHYRUS					"ZEPHYRUS"
 #define STORE_SMSTORE					"SMSTORE"
 #define STORE_SMRPG						"SMRPG"
+#define STORE_MYJS						"MYJS"
 
 EngineVersion engineName;
 
@@ -54,6 +61,7 @@ Handle ARRAY_Contracts;
 
 bool IsInContract[MAXPLAYERS + 1];
 bool IsInDatabase[MAXPLAYERS + 1];
+bool g_bIsLR = false;
 
 int contractPoints[MAXPLAYERS + 1];
 int contractReward[MAXPLAYERS + 1];
@@ -61,7 +69,7 @@ int contractProgress[MAXPLAYERS + 1];
 int contractObjective[MAXPLAYERS + 1];
 int contractAccomplishedCount[MAXPLAYERS + 1];
 
-float distance;
+float g_fdistance;
 float newPosition[3];
 float lastPosition[MAXPLAYERS + 1][3];
 
@@ -97,9 +105,11 @@ public void OnPluginStart()
 	CVAR_DBConfigurationName = CreateConVar("sm_database_configuration_name", "storage-local", "Configuration name in database.cfg, by default, all results are saved in the sqlite database.");
 	CVAR_ChanceGetContract = CreateConVar("sm_contract_chance_get_contract", "30", "The % of luck to get a new contract every 5 minutes.", _, true, 1.0);
 	CVAR_TeamRestrictions = CreateConVar("sm_contract_teams", "2;3", "Team index wich can get contract. 2 = RED/T 3 = BLU/CT");
-	CVAR_UsuedStore = CreateConVar("sm_contract_store_select", "NONE", "NONE=No store usage/ZEPHYRUS=use zephyrus store/SMSTORE=use sourcemod store");
+	CVAR_UsuedStore = CreateConVar("sm_contract_store_select", "NONE", "NONE=No store usage/ZEPHYRUS=use zephyrus store/SMSTORE=use sourcemod store/MYJS=use MyJailShop");
 	CVAR_MinimumPlayers = CreateConVar("sm_contract_minimum_players", "2", "How much player needed before receving an contract.", _, true, 1.0);
 	CVAR_ContractInterval = CreateConVar("sm_contract_interval", "300", "Time (in seconds) before giving a new contract if any.", _, true, 1.0);
+	
+	AutoExecConfig(true, "contract");
 	
 	COOKIE_CurrentContract = RegClientCookie("Contract_CurrentContractName", "Contain the name of the current contract.", CookieAccess_Private);
 	
@@ -121,6 +131,7 @@ public void OnPluginStart()
 	}
 	
 	HookEvent("player_death", OnPlayerDeath);
+	HookEvent("round_end", OnRoundEnd);
 	
 	LoadTranslations("common.phrases");
 	LoadTranslations("contract.phrases");
@@ -305,6 +316,59 @@ public void OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 		
 		VerifyContract(attacker);
 	}
+	
+	if (!LibraryExists("warden"))
+		return;
+	
+	if (IsInContract[attacker] && StrEqual(contractType[attacker], "WARDEN_KILLS"))
+	{
+		if (warden_iswarden(attacker))
+		{
+			if (CheckKillMethod(attacker))
+			{
+				contractProgress[attacker]++;
+				VerifyContract(attacker);
+			}
+		}
+	}
+}
+
+public void OnRoundEnd(Handle event, const char[] name, bool dontBroadcast)
+{
+	if (!LibraryExists("warden") && !LibraryExists("hosties"))
+		return;
+	
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (IsValidClient(i) && IsInContract[i] && IsPlayerAlive(i))
+		{
+			if (StrEqual(contractType[i], "WARDEN_ROUNDS"))
+			{
+				if (warden_iswarden(i))
+				{
+					contractProgress[i]++;
+					VerifyContract(i);
+				}
+			}
+			if (g_bIsLR)
+			{
+				if (StrEqual(contractType[i], "LAST_REQUEST"))
+				{
+					if (GetClientTeam(i) == CS_TEAM_T)
+					{
+						contractProgress[i]++;
+						VerifyContract(i);
+					}
+				}
+			}
+		}
+	}
+	g_bIsLR = false;
+}
+
+public int OnAvailableLR(int Announced)
+{
+	g_bIsLR = true;
 }
 
 public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &damage, int &damagetype)
@@ -532,6 +596,14 @@ public void SendContract(int client, Handle contractInfos, bool forceYES)
 		Format(sObjectiv, sizeof(sObjectiv), "%t", "Contract_Headshot", cObjective);
 	else if (StrEqual(cAction, "DIE"))
 		Format(sObjectiv, sizeof(sObjectiv), "%t", "Contract_Die", cObjective);
+	else if (StrEqual(cAction, "WARDEN_ROUNDS"))
+		Format(sObjectiv, sizeof(sObjectiv), "%t", "Contract_WardenRounds", cObjective);
+	else if (StrEqual(cAction, "WARDEN_KILLS"))
+		Format(sObjectiv, sizeof(sObjectiv), "%t", "Contract_WardenKills", cObjective, cWeapon);
+	else if (StrEqual(cAction, "LAST_REQUEST"))
+		Format(sObjectiv, sizeof(sObjectiv), "%t", "Contract_LastRequest", cObjective);
+	else if (StrEqual(cAction, "FINISH_BHOPSHAVIT"))
+		Format(sObjectiv, sizeof(sObjectiv), "%t", "Contract_BhopShavit", cObjective);
 	
 	contractReward[client] = cReward;
 	contractProgress[client] = 0;
@@ -594,6 +666,10 @@ public void VerifyContract(int client)
 	else if (StrEqual(store, STORE_SMRPG))
 	{
 		SMRPG_SetClientExperience(client, SMRPG_GetClientExperience(client) + contractReward[client]);
+	}
+	else if (StrEqual(store, STORE_MYJS))
+	{
+		MyJailShop_SetCredits(client, MyJailShop_GetCredits(client)+contractReward[client]);
 	}
 	
 	CPrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_ThankYou");
@@ -681,9 +757,9 @@ public Action TMR_UpdateHUD(Handle tmr)
 		if (IsClientInGame(i) && IsPlayerAlive(i) && IsInContract[i])
 		{
 			GetClientAbsOrigin(i, newPosition);
-			distance = GetVectorDistance(lastPosition[i], newPosition);
+			g_fdistance = GetVectorDistance(lastPosition[i], newPosition);
 			lastPosition[i] = newPosition;
-			if (distance / 20 >= 1 && StrEqual(contractType[i], "WALK"))
+			if (g_fdistance / 20 >= 1 && StrEqual(contractType[i], "WALK"))
 			{
 				contractProgress[i] += 1;
 				VerifyContract(i);

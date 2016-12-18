@@ -219,9 +219,33 @@
 	{
 		"#format"	"{1:i}"
 		"en"		"Die {1} times!"
-		"en"		"Sterbe {1} mal!"
+		"de"		"Sterbe {1} mal!"
 		"lv"		"Nomirsti {1} reizes!"
 		"hu"		"Halj meg {1} alkalommal!"
 		"pt-br"		"Morra {1} vez(es)"
+	}
+	"Contract_WardenRounds"
+	{
+		"#format"	"{1:i}"
+		"en"		"Surive as warden {1} rounds!"
+		"de"		"Überlebe {1} Runden as Warden!"
+	}
+	"Contract_WardenKills"
+	{
+		"#format"	"{1:i}"
+		"en"		"Kill {1} player as warden!"
+		"de"		"Töte {1} Spieler als Warden!"
+	}
+	"Contract_LastRequest"
+	{
+		"#format"	"{1:i}"
+		"en"		"Reach & surive {1} Last Request rounds!"
+		"de"		"Erreiche & überlebe {1} Last Request Runden!"
+	}
+	"Contract_BhopShavit"
+	{
+		"#format"	"{1:i}"
+		"en"		"Finish {1} times the map!"
+		"de"		"Beende die Map {1} mal!"
 	}
 }
