@@ -1,10 +1,12 @@
+#include <multicolors>
+#include <clientprefs>
 #include <sourcemod>
 #include <sdktools>
-#include <multicolors>
 #include <sdkhooks>
 #undef REQUIRE_PLUGIN
 #include <zephyrus_store>
 #include <smrpg>
+#include <shavit>
 #include <smstore/store/store-backend>
 #undef REQUIRE_EXTENSIONS
 #include <tf2_stocks>
@@ -41,10 +43,12 @@ EngineVersion engineName;
 Handle CVAR_DBConfigurationName;
 Handle CVAR_ChanceGetContract;
 Handle CVAR_TeamRestrictions;
+Handle CVAR_ContractInterval;
 Handle CVAR_MinimumPlayers;
 Handle CVAR_UsuedStore;
 
 Handle TIMER_ContractsDistribution;
+Handle COOKIE_CurrentContract;
 Handle DATABASE_Contract;
 Handle ARRAY_Contracts;
 
@@ -61,13 +65,13 @@ float distance;
 float newPosition[3];
 float lastPosition[MAXPLAYERS + 1][3];
 
-char action[10];
+char action[50];
 char reward[10];
 char weapon[10];
 char chances[10];
 char objective[10];
-char contractName[100];
-char contractType[MAXPLAYERS + 1][10];
+char contractType[MAXPLAYERS + 1][100];
+char contractName[MAXPLAYERS + 1][100];
 char contractWeapon[MAXPLAYERS + 1][100];
 char contractDescription[MAXPLAYERS + 1][100];
 
@@ -95,28 +99,42 @@ public void OnPluginStart()
 	CVAR_TeamRestrictions = CreateConVar("sm_contract_teams", "2;3", "Team index wich can get contract. 2 = RED/T 3 = BLU/CT");
 	CVAR_UsuedStore = CreateConVar("sm_contract_store_select", "NONE", "NONE=No store usage/ZEPHYRUS=use zephyrus store/SMSTORE=use sourcemod store");
 	CVAR_MinimumPlayers = CreateConVar("sm_contract_minimum_players", "2", "How much player needed before receving an contract.", _, true, 1.0);
+	CVAR_ContractInterval = CreateConVar("sm_contract_interval", "300", "Time (in seconds) before giving a new contract if any.", _, true, 1.0);
 	
-	HookEvent("player_death", OnPlayerDeath);
+	COOKIE_CurrentContract = RegClientCookie("Contract_CurrentContractName", "Contain the name of the current contract.", CookieAccess_Private);
 	
 	engineName = GetEngineVersion();
 	
 	if (GetConVarInt(CVAR_MinimumPlayers) <= GetPlayerCount())
-		TIMER_ContractsDistribution = CreateTimer(300.0, TMR_DistributeContracts, _, TIMER_REPEAT);
+		TIMER_ContractsDistribution = CreateTimer(GetConVarFloat(CVAR_ContractInterval), TMR_DistributeContracts, _, TIMER_REPEAT);
 	
 	if (engineName != Engine_CSS || engineName != Engine_CSGO)
 		CreateTimer(0.5, TMR_UpdateHUD, _, TIMER_REPEAT);
 	
 	for (int z = 0; z < MaxClients; z++)
 	{
-		if (!IsValidClient(z))
+		if (!IsValidClientContract (z))
 			continue;
 		
 		GetClientAbsOrigin(z, lastPosition[z]);
 		SDKHook(z, SDKHook_OnTakeDamage, OnTakeDamage);
 	}
 	
+	HookEvent("player_death", OnPlayerDeath);
+	
 	LoadTranslations("common.phrases");
 	LoadTranslations("contract.phrases");
+}
+
+public void OnPluginEnd()
+{
+	for (int z = 0; z < MaxClients; z++)
+	{
+		if (!IsValidClientContract (z) || !IsInContract[z])
+			continue;
+		
+		SaveCookie(z);
+	}
 }
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
@@ -130,9 +148,63 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	return APLRes_Success;
 }
 
+public void SaveCookie(int client)
+{
+	if (IsInContract[client])
+	{
+		char sCookieValue[100];
+		Format(sCookieValue, sizeof(sCookieValue), "%s¢%i", contractName[client], contractProgress[client]);
+		SetClientCookie(client, COOKIE_CurrentContract, sCookieValue);
+	}
+}
+
+public void OnClientCookiesCached(int client)
+{
+	char sCookieValue[100];
+	char tmpContractName[100];
+	char sContractNameValue[2][100];
+	GetClientCookie(client, COOKIE_CurrentContract, sCookieValue, sizeof(sCookieValue));
+	
+	if (StrEqual(sCookieValue, "-"))
+		return;
+	
+	if (StrContains(sCookieValue, "¢") == -1)
+	{
+		SetClientCookie(client, COOKIE_CurrentContract, "-");
+		return;
+	}
+	
+	ExplodeString(sCookieValue, "¢", sContractNameValue, sizeof sContractNameValue, sizeof sContractNameValue[]);
+	
+	int contractCount = GetArraySize(ARRAY_Contracts);
+	while (contractCount > 0)
+	{
+		contractCount--;
+		
+		Handle TRIE_Contract = GetArrayCell(ARRAY_Contracts, contractCount);
+		GetTrieString(TRIE_Contract, FIELD_CONTRACT_NAME, tmpContractName, sizeof(tmpContractName));
+		
+		if (StrEqual(tmpContractName, sContractNameValue[0]))
+		{
+			AssignateContract(client, true, contractCount);
+			contractProgress[client] = StringToInt(sContractNameValue[1]);
+			break;
+		}
+	}
+}
+
 public void OnConfigsExecuted()
 {
 	ReadConfigFile();
+	
+	for (int z = 0; z < MaxClients; z++)
+	{
+		if (!IsValidClientContract (z))
+			continue;
+		
+		if (AreClientCookiesCached(z))
+			OnClientCookiesCached(z);
+	}
 	
 	char dbconfig[45];
 	GetConVarString(CVAR_DBConfigurationName, dbconfig, sizeof(dbconfig));
@@ -144,22 +216,23 @@ public void OnClientConnected(int client)
 	if (TIMER_ContractsDistribution == INVALID_HANDLE)
 	{
 		if (GetConVarInt(CVAR_MinimumPlayers) <= GetPlayerCount())
-			TIMER_ContractsDistribution = CreateTimer(300.0, TMR_DistributeContracts, _, TIMER_REPEAT);
+			TIMER_ContractsDistribution = CreateTimer(GetConVarFloat(CVAR_ContractInterval), TMR_DistributeContracts, _, TIMER_REPEAT);
 	}
 	
 	IsInContract[client] = false;
 	
-	LoadContracts(client);
+	if (DATABASE_Contract != INVALID_HANDLE)
+		LoadContracts(client);
 }
 
-public OnClientPutInServer(client)
+public void OnClientPutInServer(int client)
 {
 	SDKHook(client, SDKHook_OnTakeDamage, OnTakeDamage);
 }
 
 public void OnClientDisconnect(int client)
 {
-	if (!IsValidClient(client))
+	if (!IsValidClientContract (client))
 		return;
 	
 	if (TIMER_ContractsDistribution != INVALID_HANDLE)
@@ -171,6 +244,7 @@ public void OnClientDisconnect(int client)
 		}
 	}
 	
+	SaveCookie(client);
 	SaveIntoDatabase(client);
 }
 
@@ -180,10 +254,10 @@ public void OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 	int client = GetClientOfUserId(GetEventInt(event, "userid"));
 	int attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
 	
-	if (!IsValidClient(client) || (!IsInContract[client] && !IsInContract[attacker]))
+	if (!IsValidClientContract (client))
 		return;
 	
-	if (StrEqual(contractType[attacker], "HEADSHOT"))
+	if (IsInContract[attacker] && StrEqual(contractType[attacker], "HEADSHOT"))
 	{
 		int customkill = GetEventInt(event, "customkill");
 		
@@ -207,7 +281,8 @@ public void OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 			}
 		}
 	}
-	else if (StrEqual(contractType[client], "DIE"))
+	
+	if (IsInContract[client] && StrEqual(contractType[client], "DIE"))
 	{
 		if (CheckKillMethod(client))
 			contractProgress[client]++;
@@ -222,7 +297,8 @@ public void OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 		
 		VerifyContract(client);
 	}
-	else if (StrEqual(contractType[attacker], "KILL"))
+	
+	if (IsInContract[attacker] && StrEqual(contractType[attacker], "KILL"))
 	{
 		if (CheckKillMethod(attacker))
 			contractProgress[attacker]++;
@@ -233,22 +309,28 @@ public void OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 
 public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &damage, int &damagetype)
 {
-	if (!IsValidClient(victim) || (!IsInContract[victim] && !IsInContract[attacker]))
-		return Plugin_Continue;
-	
-	if (IsInContract[victim] && StrEqual(contractType[victim], "TAKE_DAMAGE"))
+	if (IsValidClientContract (victim) && IsInContract[victim] && StrEqual(contractType[victim], "TAKE_DAMAGE"))
 	{
-		contractProgress[victim] += damage;
+		contractProgress[victim] += RoundToCeil(damage);
 		VerifyContract(victim);
 	}
 	
-	if(IsInContract[attacker] && StrEqual(contractType[attacker], "DEAL_DAMAGE"))
+	if (IsValidClientContract (attacker) && IsInContract[attacker] && StrEqual(contractType[attacker], "DEAL_DAMAGE"))
 	{
-		contractProgress[attacker] += damage;
+		contractProgress[attacker] += RoundToCeil(damage);
 		VerifyContract(attacker);
 	}
 	
 	return Plugin_Continue;
+}
+
+public void Shavit_OnFinish(int client, BhopStyle style, float time, int jumps, int strafes, float sync)
+{
+	if (IsInContract[client] && StrEqual(contractType[client], "FINISH_BHOPSHAVIT"))
+	{
+		contractProgress[client]++;
+		VerifyContract(client);
+	}
 }
 
 //Command callback.
@@ -307,11 +389,11 @@ public Action CMD_GiveContract(int client, int args)
 				tn_is_ml)) <= 0)
 	{
 		ReplyToTargetError(client, target_count);
-		return Plugin_Handled;
+		return Plugin_Continue;
 	}
-	
+	PrintToServer("test");
 	for (int i = 0; i < target_count; i++)
-	AssignateContract(target_list[i], true);
+	AssignateContract(target_list[i], true, -1);
 	
 	CPrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_GiveSucess", target_count);
 	
@@ -320,7 +402,7 @@ public Action CMD_GiveContract(int client, int args)
 
 public Action CMD_DisplayContractInfo(int client, int args)
 {
-	if (!IsValidClient(client))
+	if (!IsValidClientContract (client))
 		return Plugin_Handled;
 	
 	if (!IsInContract[client])
@@ -338,7 +420,7 @@ public Action CMD_DisplayContractInfo(int client, int args)
 
 public Action CMD_DisplayContractRank(int client, int args)
 {
-	if (!IsValidClient(client))
+	if (!IsValidClientContract (client))
 		return Plugin_Handled;
 	
 	int target = -1;
@@ -423,11 +505,11 @@ public void LoadContracts(int client)
 	SQL_TQuery(DATABASE_Contract, T_GetPlayerInfo, query, client);
 }
 
-public void SendContract(int client, Handle contractInfos)
+public void SendContract(int client, Handle contractInfos, bool forceYES)
 {
 	char sObjectiv[100];
 	char cWeapon[100];
-	char cAction[10];
+	char cAction[50];
 	char cName[100];
 	int cObjective;
 	int cReward;
@@ -454,28 +536,39 @@ public void SendContract(int client, Handle contractInfos)
 	contractReward[client] = cReward;
 	contractProgress[client] = 0;
 	contractObjective[client] = cObjective;
-	contractType[client] = cAction;
+	Format(contractType[client], sizeof(contractType[]), cAction);
+	Format(contractName[client], sizeof(contractName[]), cName);
 	Format(contractDescription[client], sizeof(contractDescription[]), "%s - %s", cName, sObjectiv);
 	
-	char phrases[100];
-	Format(cName, sizeof(cName), "%t - %s", "Contract_New", cName);
-	Panel menu = new Panel();
-	SetPanelTitle(menu, cName);
-	Format(phrases, sizeof(phrases), "%t", "menu_objectiv");
-	DrawPanelItem(menu, phrases, ITEMDRAW_RAWLINE);
-	DrawPanelItem(menu, sObjectiv, ITEMDRAW_RAWLINE);
-	Format(phrases, sizeof(phrases), "%t", "menu_accept");
-	DrawPanelItem(menu, phrases, ITEMDRAW_RAWLINE);
-	Format(phrases, sizeof(phrases), "%t", "menu_yes");
-	DrawPanelItem(menu, phrases);
-	Format(phrases, sizeof(phrases), "%t", "menu_no");
-	DrawPanelItem(menu, phrases);
-	SendPanelToClient(menu, client, MenuHandle_MainMenu, MENU_TIME_FOREVER);
+	if (!forceYES)
+	{
+		char phrases[100];
+		Format(cName, sizeof(cName), "%t - %s", "Contract_New", cName);
+		Panel menu = new Panel();
+		SetPanelTitle(menu, cName);
+		Format(phrases, sizeof(phrases), "%t", "menu_objectiv");
+		DrawPanelItem(menu, phrases, ITEMDRAW_RAWLINE);
+		DrawPanelItem(menu, sObjectiv, ITEMDRAW_RAWLINE);
+		Format(phrases, sizeof(phrases), "%t", "menu_accept");
+		DrawPanelItem(menu, phrases, ITEMDRAW_RAWLINE);
+		Format(phrases, sizeof(phrases), "%t", "menu_yes");
+		DrawPanelItem(menu, phrases);
+		Format(phrases, sizeof(phrases), "%t", "menu_no");
+		DrawPanelItem(menu, phrases);
+		SendPanelToClient(menu, client, MenuHandle_MainMenu, MENU_TIME_FOREVER);
+	}
+	else
+	{
+		IsInContract[client] = true;
+	}
 }
 
 public void VerifyContract(int client)
 {
 	if (contractProgress[client] < contractObjective[client])
+		return;
+		
+	if (!IsInContract[client])
 		return;
 	
 	IsInContract[client] = false;
@@ -505,6 +598,8 @@ public void VerifyContract(int client)
 	
 	CPrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_ThankYou");
 	CPrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_ThankReward", contractReward[client]);
+	
+	SetClientCookie(client, COOKIE_CurrentContract, "-");
 }
 
 public void SaveIntoDatabase(int client)
@@ -532,41 +627,56 @@ public void SaveIntoDatabase(int client)
 	}
 }
 
-public void AssignateContract(int client, bool force)
+public void AssignateContract(int client, bool force, int contractID)
 {
 	float pourcent = GetConVarFloat(CVAR_ChanceGetContract) / 100.0;
 	
 	if (!force && GetRandomFloat(0.0, 1.0) < pourcent)
 		return;
 	
-	int contractCount = GetArraySize(ARRAY_Contracts);
-	while (contractCount > 0)
+	if (contractID == -1)
 	{
-		contractCount--;
+		int contractCount = GetArraySize(ARRAY_Contracts);
+		while (contractCount > 0)
+		{
+			contractCount--;
+			
+			Handle TRIE_Contract = GetArrayCell(ARRAY_Contracts, contractCount);
+			GetTrieValue(TRIE_Contract, FIELD_CONTRACT_CHANCES, pourcent);
+			
+			if (GetRandomFloat(0.0, 1.0) > pourcent)
+				continue;
+			
+			SendContract(client, TRIE_Contract, false);
+			
+			break;
+		}
 		
-		Handle TRIE_Contract = GetArrayCell(ARRAY_Contracts, contractCount);
-		GetTrieValue(TRIE_Contract, FIELD_CONTRACT_CHANCES, pourcent);
-		
-		if (GetRandomFloat(0.0, 1.0) > pourcent)
-			continue;
-		
-		SendContract(client, TRIE_Contract);
-		
-		break;
+		if (force)
+		{
+			Handle TRIE_Contract = GetArrayCell(ARRAY_Contracts, GetRandomInt(0, GetArraySize(ARRAY_Contracts) - 1));
+			GetTrieValue(TRIE_Contract, FIELD_CONTRACT_CHANCES, pourcent);
+			SendContract(client, TRIE_Contract, false);
+		}
 	}
-	
-	if (force)
+	else
 	{
-		Handle TRIE_Contract = GetArrayCell(ARRAY_Contracts, GetRandomInt(0, GetArraySize(ARRAY_Contracts) - 1));
+		if (contractID < 0 || contractID > GetArraySize(ARRAY_Contracts) - 1)
+		{
+			SetFailState("INVALID CONTRACT ID SUPPLIED !");
+			return;
+		}
+		
+		Handle TRIE_Contract = GetArrayCell(ARRAY_Contracts, contractID);
 		GetTrieValue(TRIE_Contract, FIELD_CONTRACT_CHANCES, pourcent);
-		SendContract(client, TRIE_Contract);
+		SendContract(client, TRIE_Contract, true);
 	}
 }
 
 //Timer callback
 public Action TMR_UpdateHUD(Handle tmr)
 {
-	for (new i = 1; i <= MaxClients; i++)
+	for (int i = 1; i <= MaxClients; i++)
 	{
 		if (IsClientInGame(i) && IsPlayerAlive(i) && IsInContract[i])
 		{
@@ -583,7 +693,7 @@ public Action TMR_UpdateHUD(Handle tmr)
 	
 	for (int z = 0; z < MaxClients; z++)
 	{
-		if (!IsInContract[z] || !IsValidClient(z))
+		if (!IsInContract[z] || !IsValidClientContract (z))
 			continue;
 		
 		SetHudTextParams(0.02, 0.0, 0.8, 255, 0, 0, 200);
@@ -600,19 +710,19 @@ public Action TMR_DistributeContracts(Handle tmr)
 	GetConVarString(CVAR_TeamRestrictions, teams, sizeof(teams));
 	for (int z = 0; z < MaxClients; z++)
 	{
-		if (!IsValidClient(z) || IsInContract[z])
+		if (!IsValidClientContract (z) || IsInContract[z])
 			continue;
 		
 		IntToString(GetClientTeam(z), team, sizeof(team));
 		if (StrContains(teams, team) == -1)
 			continue;
 		
-		AssignateContract(z, false);
+		AssignateContract(z, false, -1);
 	}
 }
 
 //Menu Handlers
-public MenuHandle_MainMenu(Handle menu, MenuAction menuAction, int client, int itemIndex)
+public int MenuHandle_MainMenu(Handle menu, MenuAction menuAction, int client, int itemIndex)
 {
 	if (menuAction == MenuAction_Select)
 	{
@@ -634,28 +744,30 @@ public int MenuHandler_Top(Handle menu, MenuAction menuAction, int param1, int p
 }
 
 //Database related stuff
-public GotDatabase(Handle owner, Handle hndl, const char[] error, any data)
+public void GotDatabase(Handle owner, Handle hndl, const char[] error, any data)
 {
 	if (hndl == INVALID_HANDLE)
 	{
 		SetFailState("%t", "Database_Failure", error);
-		return;
 	}
-	
-	DATABASE_Contract = hndl;
-	
-	char buffer[300];
-	if (!SQL_FastQuery(DATABASE_Contract, QUERY_INIT_DATABASE))
+	else
 	{
-		SQL_GetError(DATABASE_Contract, buffer, sizeof(buffer));
-		SetFailState("%s", buffer);
-	}
-	for (int z = 0; z < MaxClients; z++)
-	{
-		if (!IsValidClient(z))
-			continue;
+		DATABASE_Contract = hndl;
 		
-		LoadContracts(z);
+		char buffer[300];
+		if (!SQL_FastQuery(DATABASE_Contract, QUERY_INIT_DATABASE))
+		{
+			SQL_GetError(DATABASE_Contract, buffer, sizeof(buffer));
+			SetFailState("%s", buffer);
+		}
+		
+		for (int z = 1; z < MaxClients; z++)
+		{
+			if (!IsValidClientContract (z))
+				continue;
+			
+			LoadContracts(z);
+		}
 	}
 }
 
@@ -701,8 +813,11 @@ public void T_GetTop10(Handle db, Handle results, const char[] error, any data)
 
 public void T_GetPlayerInfo(Handle db, Handle results, const char[] error, any data)
 {
+	if (DATABASE_Contract == INVALID_HANDLE)
+		return;
+	
 	int client = data;
-	if (!IsValidClient(client))
+	if (!IsValidClientContract (client))
 		return;
 	
 	if (!SQL_FetchRow(results))
@@ -730,9 +845,10 @@ stock bool ReadConfigFile()
 	if (!KvGotoFirstSubKey(kv))
 		return;
 	
+	char cName[100];
 	do
 	{
-		KvGetString(kv, FIELD_CONTRACT_NAME, contractName, sizeof(contractName));
+		KvGetString(kv, FIELD_CONTRACT_NAME, cName, sizeof(cName));
 		KvGetString(kv, FIELD_CONTRACT_ACTION, action, sizeof(action));
 		KvGetString(kv, FIELD_CONTRACT_OBJECTIVE, objective, sizeof(objective));
 		KvGetString(kv, FIELD_CONTRACT_CHANCES, chances, sizeof(chances));
@@ -740,7 +856,7 @@ stock bool ReadConfigFile()
 		KvGetString(kv, FIELD_CONTRACT_WEAPON, weapon, sizeof(weapon));
 		
 		Handle tmpTrie = CreateTrie();
-		SetTrieString(tmpTrie, FIELD_CONTRACT_NAME, contractName, false);
+		SetTrieString(tmpTrie, FIELD_CONTRACT_NAME, cName, false);
 		SetTrieString(tmpTrie, FIELD_CONTRACT_ACTION, action, false);
 		SetTrieValue(tmpTrie, FIELD_CONTRACT_OBJECTIVE, StringToInt(objective), false);
 		SetTrieValue(tmpTrie, FIELD_CONTRACT_CHANCES, (StringToFloat(chances) / 100.0), false);
@@ -766,14 +882,14 @@ stock int GetPlayerCount()
 	int count = 0;
 	for (int i = 0; i < MaxClients; i++)
 	{
-		if (IsValidClient(i))
+		if (IsValidClientContract (i))
 			count++;
 	}
 	
 	return count;
 }
 
-stock bool IsValidClient(iClient, bool bReplay = true)
+stock bool IsValidClientContract (int iClient, bool bReplay = true)
 {
 	if (iClient <= 0 || iClient > MaxClients)
 		return false;
