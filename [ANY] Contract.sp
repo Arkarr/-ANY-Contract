@@ -11,15 +11,17 @@
 #include <smstore/store/store-backend>
 #include <smrpg>
 #include <shavit>
+#pragma newdecls optional
 #undef REQUIRE_EXTENSIONS
 #include <tf2_stocks>
 #include <cstrike>
 #include <multicolors>
+#pragma newdecls required
 
 //Plugin Info
 #define PLUGIN_TAG						"{green}[{red}Contract{green}]{default}"
 #define PLUGIN_NAME						"[ANY] Contract"
-#define PLUGIN_AUTHOR 					"Arkarr" //warden by shanapu
+#define PLUGIN_AUTHOR 					"Arkarr" //warden & lastrequest by shanapu
 #define PLUGIN_VERSION 					"1.6"
 #define PLUGIN_DESCRIPTION 				"Assign contract to player and let them a certain period of time to do it to earn extra credits."
 //KeyValue fields
@@ -103,7 +105,7 @@ public void OnPluginStart()
 	CVAR_DBConfigurationName = CreateConVar("sm_database_configuration_name", "storage-local", "Configuration name in database.cfg, by default, all results are saved in the sqlite database.");
 	CVAR_ChanceGetContract = CreateConVar("sm_contract_chance_get_contract", "30", "The % of luck to get a new contract every 5 minutes.", _, true, 1.0);
 	CVAR_TeamRestrictions = CreateConVar("sm_contract_teams", "2;3", "Team index wich can get contract. 2 = RED/T 3 = BLU/CT");
-	CVAR_UsuedStore = CreateConVar("sm_contract_store_select", "NONE", "NONE=No store usage/ZEPHYRUS=use zephyrus store/SMSTORE=use sourcemod store");
+	CVAR_UsuedStore = CreateConVar("sm_contract_store_select", "NONE", "NONE=No store usage/ZEPHYRUS=use zephyrus store/SMSTORE=use sourcemod store/MYJS=use MyJailShop");
 	CVAR_MinimumPlayers = CreateConVar("sm_contract_minimum_players", "2", "How much player needed before receving an contract.", _, true, 1.0);
 	CVAR_ContractInterval = CreateConVar("sm_contract_interval", "300", "Time (in seconds) before giving a new contract if any.", _, true, 1.0);
 	
