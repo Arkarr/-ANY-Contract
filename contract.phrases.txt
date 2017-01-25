@@ -227,7 +227,7 @@
 	"Contract_WardenRounds"
 	{
 		"#format"	"{1:i}"
-		"en"		"Surive as warden {1} rounds!"
+		"en"		"Survive as warden {1} rounds!"
 		"de"		"Überlebe {1} Runden as Warden!"
 	}
 	"Contract_WardenKills"
@@ -239,7 +239,7 @@
 	"Contract_LastRequest"
 	{
 		"#format"	"{1:i}"
-		"en"		"Reach & surive {1} Last Request rounds!"
+		"en"		"Reach & survive {1} Last Request rounds!"
 		"de"		"Erreiche & überlebe {1} Last Request Runden!"
 	}
 	"Contract_BhopShavit"
@@ -247,5 +247,17 @@
 		"#format"	"{1:i}"
 		"en"		"Finish {1} times the map!"
 		"de"		"Beende die Map {1} mal!"
+	}
+	"Contract_DealDamage"
+	{
+		"#format"	"{1:i}"
+		"en"		"Deal {1} damage!"
+		"de"		"Verteil {1} Schaden!"
+	}
+	"Contract_TakeDamage"
+	{
+		"#format"	"{1:i}"
+		"en"		"Take {1} damage!"
+		"de"		"Steck {1} Schaden ein!"
 	}
 }

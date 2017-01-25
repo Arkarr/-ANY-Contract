@@ -604,6 +604,10 @@ public void SendContract(int client, Handle contractInfos, bool forceYES)
 		Format(sObjectiv, sizeof(sObjectiv), "%t", "Contract_LastRequest", cObjective);
 	else if (StrEqual(cAction, "FINISH_BHOPSHAVIT"))
 		Format(sObjectiv, sizeof(sObjectiv), "%t", "Contract_BhopShavit", cObjective);
+	else if (StrEqual(cAction, "DEAL_DAMAGE"))
+		Format(sObjectiv, sizeof(sObjectiv), "%t", "Contract_DealDamage", cObjective);
+	else if (StrEqual(cAction, "TAKE_DAMAGE"))
+		Format(sObjectiv, sizeof(sObjectiv), "%t", "Contract_TakeDamage", cObjective);
 	
 	contractReward[client] = cReward;
 	contractProgress[client] = 0;
