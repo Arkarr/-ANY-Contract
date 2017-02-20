@@ -1,4 +1,4 @@
-"Phrases"
+﻿"Phrases"
 {
 	//Common
 	"Done"
@@ -259,5 +259,16 @@
 		"#format"	"{1:i}"
 		"en"		"Take {1} damage!"
 		"de"		"Steck {1} Schaden ein!"
+	}
+	"Contract_NoScope"
+	{
+		"#format"	"{1:i}"
+		"en"		"Do {1} no scopes !"
+		"de"		"Macht {1} no scopes !"
+	}
+	"Contract_TeamKill"
+	{
+		"#format"	"{1:i}"
+		"en"		"Kill {1} allie(s) !"
 	}
 }

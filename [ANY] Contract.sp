@@ -264,6 +264,15 @@ public void OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 {
 	int client = GetClientOfUserId(GetEventInt(event, "userid"));
 	int attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
+		
+	if (IsInContract[attacker] && StrEqual(contractType[attacker], "TEAM_KILL"))
+	{
+		if(attacker != client && GetClientTeam(attacker) == GetClientTeam(client))
+		{
+			contractProgress[attacker]++;
+			VerifyContract(attacker);
+		}
+	}
 	
 	if (!IsValidClientContract (client))
 		return;
@@ -290,6 +299,16 @@ public void OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 				contractProgress[attacker]++;
 				VerifyContract(attacker);
 			}
+		}
+	}
+	
+	if(IsInContract[attacker] && StrEqual(contractType[attacker], "NO_SCOPE"))
+	{
+		if((StrContains(weapon, "awp") != -1 || StrContains(weapon, "ssg08") != -1 || StrContains(weapon, "scout") != -1) || !(0 < GetEntProp(attacker, Prop_Data, "m_iFOV") < GetEntProp(attacker, Prop_Data, "m_iDefaultFOV")))
+		{
+			contractProgress[attacker]++;
+			
+			VerifyContract(attacker);
 		}
 	}
 	
@@ -608,6 +627,10 @@ public void SendContract(int client, Handle contractInfos, bool forceYES)
 		Format(sObjectiv, sizeof(sObjectiv), "%t", "Contract_DealDamage", cObjective);
 	else if (StrEqual(cAction, "TAKE_DAMAGE"))
 		Format(sObjectiv, sizeof(sObjectiv), "%t", "Contract_TakeDamage", cObjective);
+	else if (StrEqual(cAction, "NO_SCOPE"))
+		Format(sObjectiv, sizeof(sObjectiv), "%t", "Contract_NoScope", cObjective);
+	else if (StrEqual(cAction, "TEAM_KILL"))
+		Format(sObjectiv, sizeof(sObjectiv), "%t", "Contract_TeamKill", cObjective);
 	
 	contractReward[client] = cReward;
 	contractProgress[client] = 0;
