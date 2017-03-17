@@ -56,7 +56,7 @@
 		"lv"		"{1} Nav iespējams iegūt topa 7 spēlētājus pašlaik."
 		"hu"		"{1} A top 7 játékos adatai nem elérhetőek most."
 		"pt-br"		"{1} Não é possível obter os 7 maiores contratos agora."
-		"fr"		"{1} Impossible d"obtenir les 7 meilleurs joueurs du classement."
+		"fr"		"{1} Impossible d'obtenir les 7 meilleurs joueurs du classement."
 	}
 	//Menu stuff
 	"Contract_MTopSeven"
