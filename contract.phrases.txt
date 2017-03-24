@@ -9,6 +9,7 @@
 		"hu"		"Kész!"
 		"pt-br"		"Feito!"
 		"fr"		"Fait!"
+		"tr"		"Tamamlandı!"
 	}
 	"Target_Invalid"
 	{
@@ -18,6 +19,7 @@
 		"hu"		"Nem találom a célpontot."
 		"pt-br"		"Trajeto inválido."
 		"fr"		"Cible invalide"
+		"tr"		"Geçersiz hedef."
 	}
 	//Database
 	"Database_reset"
@@ -28,6 +30,7 @@
 		"hu"		"Adatbázis nullázása..."
 		"pt-br"		"Reiniciando database..."
 		"fr"		"Remise a 0 de la base de données"
+		"tr"		"Veritabanı sıfırlanıyor..."
 	}
 	"Database_LoadingTop"
 	{
@@ -37,6 +40,7 @@
 		"hu"		"Legeredményesebb feladatvégrehajtók betöltése..."
 		"pt-br"		"Carregando jogadores com maiores contratos..."
 		"fr"		"Chargement des meilleurs contrats..."
+		"tr"		"En iyi sözleşmeler listeleniyor..."
 	}
 	"Database_Failure"
 	{
@@ -47,6 +51,7 @@
 		"hu"		"Adatbázis hiba: {1}"
 		"pt-br"		"Falha na database: {1}"
 		"fr"		"Base de données défecteux: {1}"
+		"tr"		"Veritabanı hatası: {1}";
 	}
 	"Database_ErrorTopPlayer"
 	{
@@ -57,6 +62,7 @@
 		"hu"		"{1} A top 7 játékos adatai nem elérhetőek most."
 		"pt-br"		"{1} Não é possível obter os 7 maiores contratos agora."
 		"fr"		"{1} Impossible d'obtenir les 7 meilleurs joueurs du classement."
+		"tr"		"{1} Şuanda ilk 7 oyuncuya ulaşılamıyor."
 	}
 	//Menu stuff
 	"Contract_MTopSeven"
@@ -67,6 +73,7 @@
 		"hu"		"Legjobb 7 feladatvégrehajtó"
 		"pt-br"		"TOP 7 Jogadores com maiores contratos"
 		"fr"		"Classement des 7 meilleurs joueurs"
+		"tr"		"En iyi 7 sözleşmeli oyuncular"
 	}
 	"Contract_MenuItem"
 	{
@@ -77,31 +84,36 @@
 		"hu"		"{1} ({2} pont, {3} feladat)"
 		"pt-br"		"{1} ({2} ponto(s), {3} contrato(s))"
 		"fr"		"{1} ({2} points(s), {3} contrat(s))"
-	}
+		"tr"		"{1} ({2} puanlar, {3} anlaşmalar)"
+		}
 	//menu
 	"menu_objectiv"
 	{
 		"en"		"Objectiv:"
 		"de"		"Auftrag:"
 		"fr"		"Objectif:"
+		"tr"		"Amaç:"
 	}
 	"menu_accept"
 	{
 		"en"		"Do you accept it?"
 		"de"		"Akzeptieren Sie es?"
 		"fr"		"Qu'est ce tu accepte?"
+		"tr"		"Kabul ediyor musun?"
 	}
 	"menu_yes"
 	{
 		"en"		"Yes, I can handle that."
 		"de"		"Ja, ich kann das."
 		"fr"		"Oui, je peux m'en occuper."
+		"tr"		"Evet, Bunu halledebilirim."
 	}
 	"menu_no"
 	{
 		"en"		"No, HELL NO!"
 		"de"		"Zur Hölle, NEIN!"
 		"fr"		"Non, je peux pas m'en occuper!"
+		"tr"		"Hayır, HAYATTA OLMAZ!"
 	}
 	//Contract
 	"Contract_GiveUsage"
@@ -112,6 +124,7 @@
 		"hu"		"Használat: sm_givecontract [JÁTÉKOS]"
 		"pt-br"		"Modo de uso: sm_givecontract [JOGADOR]"
 		"fr"		"Usage:	sm_givecontract [JOUEUR]"
+		"tr"		"Kullanımı: sm_givecontract [OYUNCU]"
 	}
 	"Contract_GiveSucess"
 	{
@@ -122,6 +135,7 @@
 		"hu"		"{1} kapott egy végrehajtandó feladatot."
 		"pt-br"		"{1} recebeu com sucesso uma oferta de contrato."
 		"fr"		"{1} Les joueurs ont reçu avec succès un contrat"
+		"tr"		"{1} oyuncular başarılı bir şekilde bir sözleşme teklifi aldı."
 	}
 	"Contract_None"
 	{
@@ -131,6 +145,7 @@
 		"hu"		"Nincs most semmi feladat a számodra."
 		"pt-br"		"Você não possui nenhum contrato no momento."
 		"fr"		"Vous n'avez pas de contrat pour l'instant."
+		"tr"		"Herhangi bir sözleşmen yok."
 	}
 	"Contract_Mission"
 	{
@@ -141,6 +156,7 @@
 		"hu"		"A jelenlegi feladatod: {1}"
 		"pt-br"		"Sua missão atual é: {1}"
 		"fr"		"Votre mission actuelle est: {1}"
+		"tr"		"Varolan görevin: {1}"
 	}
 	"Contract_Progress"
 	{
@@ -151,6 +167,7 @@
 		"hu"		"Feladatod állapota: {red}{1}{default}/{red}{2}"
 		"pt-br"		"Seu progresso atual do contrato é: {red}{1}{default}/{red}{2}"
 		"fr"		"La progression de votre contrat est {red}{1}{default}/{red}{2}"
+		"tr"		"Sözleşmenizin ilerlemesi: {red}{1}{default}/{red}{2}"
 	}
 	"Contract_Reward"
 	{
@@ -161,6 +178,7 @@
 		"hu"		"Jutalmad {red}{1}{default} pont lesz."
 		"pt-br"		"Você será recompensado com {red}{1}{default} credito(s)."
 		"fr"		"Vous serez récompensé avec {red}{1}{default} crédits.
+		"tr"		"Siz {red}{1}{default} kredi ile ödüllendirileceksiniz."
 	}
 	"Contract_CompletedInfoSelf"
 	{
@@ -171,6 +189,7 @@
 		"hu"		"{red}{1}{default} feladatot teljesítettél ({red}{2}{default} pontért)."
 		"pt-br"		"Você possui {red}{1}{default} contrato(s) completos ({red}{2}{default} ponto(s))."
 		"fr"		"Tu as {red}{1}{default} de contrats fini ({red}{2}{default} points)."
+		"tr"		"Siz {red}{1}{default} sözleşme tamamladınız ({red}{2}{default} puanlar)."
 	}
 	"Contract_CompletedInfoOther"
 	{
@@ -181,6 +200,7 @@
 		"hu"		"{1} {red}{2}{default} feladatot teljesített ({red}{3}{default} pontért)."
 		"pt-br"		"{1} possui {red}{2}{default} contrato(s) completos ({red}{3}{default} ponto(s))."
 		"fr"		"{1} as {red}{2}{default} de contrats fini ({red}{3}{default} points)."
+		"tr"		"{1} sahip {red}{2}{default} sözleşme tamamladı ({red}{3}{default} puanlar)."
 	}
 	"Contract_New"
 	{
@@ -190,6 +210,7 @@
 		"hu"		"ÚJ FELADAT"
 		"pt-br"		"NOVO CONTRATO"
 		"fr"		"NOUVEAU CONTRAT"
+		"tr"		"YENİ SÖZLEŞME"
 	}
 	"Contract_ThankYou"
 	{
@@ -199,6 +220,7 @@
 		"hu"		"Feladatodat sikeresen végrehajtottad. Köszönjük."
 		"pt-br"		"Você fez com sucesso o seu contrato, parabéns."
 		"fr"		"Vous avez réussi votre contrat, merci."
+		"tr"		"Siz başarılı bir şekilde sözleşmenizi tamamladınız, teşekkür ederiz."
 	}
 	"Contract_ThankReward"
 	{
@@ -209,6 +231,7 @@
 		"hu"		"{red}{1}{default} hozzáadva az egyenlegedhez."
 		"pt-br"		"{red}{1}{default} ponto(s) foram adicionados em seu saldo."
 		"fr"		"{red}{1}{default} a été ajouté à votre compte."
+		"tr"		"{red}{1}{default} miktar bakiyenize eklendi."
 	}
 	//Objectives
 	"Contract_Walk"
@@ -220,6 +243,7 @@
 		"hu"		"Sétálj {1} métert!"
 		"pt-br"		"Caminhe {1} metro(s)!"
 		"fr"		"Marcher {1} mètres!"
+		"tr"		"{1} Metre yürü!"
 	}
 	"Contract_Kill"
 	{
@@ -230,6 +254,7 @@
 		"hu"		"Ölj meg {1} játékost!"
 		"pt-br"		"Assassine {1} jogador(es)!"
 		"fr"		"Tuer {1} joueurs!"
+		"tr"		"{1} Oyuncu öldür!"
 	}
 	"Contract_Headshot"
 	{
@@ -240,6 +265,7 @@
 		"hu"		"Érj el {1} fejlövést!"
 		"pt-br"		"Realize {1} HEADSHOT(S)!"
 		"fr"		"Fait {1} headshots!"
+		"tr"		"{1} Kafadan vuruş yap!"
 	}
 	"Contract_Die"
 	{
@@ -250,6 +276,7 @@
 		"hu"		"Halj meg {1} alkalommal!"
 		"pt-br"		"Morra {1} vez(es)"
 		"fr"		"Fait un temps de {1} !"
+		"tr"		"{1} Defa öl!"
 	}
 	"Contract_WardenRounds"
 	{
@@ -257,6 +284,7 @@
 		"en"		"Survive as warden {1} rounds!"
 		"de"		"Überlebe {1} Runden as Warden!"
 		"fr"		"Survie en gardien pendant {1} rounds!"
+		"tr"		"Gardiyan olarak {1} tur ayakta kal!"
 	}
 	"Contract_WardenKills"
 	{
@@ -264,6 +292,7 @@
 		"en"		"Kill {1} player as warden!"
 		"de"		"Töte {1} Spieler als Warden!"
 		"fr"		"Tuer {1} le joueur en gardien!"
+		"tr"		"Gardiyan olarak {1} oyuncu öldür!"
 	}
 	"Contract_LastRequest"
 	{
@@ -271,6 +300,7 @@
 		"en"		"Reach & survive {1} Last Request rounds!"
 		"de"		"Erreiche & überlebe {1} Last Request Runden!"
 		"fr"		"Attends et survive a la dernière volonté pendant {1} rounds!"
+		"tr"		"Ulaş & ayakta kal {1} Son İstek turu kadar!"
 	}
 	"Contract_BhopShavit"
 	{
@@ -278,6 +308,7 @@
 		"en"		"Finish {1} times the map!"
 		"de"		"Beende die Map {1} mal!"
 		"fr"		"Finit la map avec un temps de {1} !"
+		"tr"		"Bu haritayı {1} kere bitir!"
 	}
 	"Contract_DealDamage"
 	{
@@ -285,13 +316,15 @@
 		"en"		"Deal {1} damage!"
 		"de"		"damage {1} Schaden!"
 		"fr"		"Donne {1} de dégats!"
-	}
+		"tr"		"Anlaşma {1} hasar!"
+		}
 	"Contract_TakeDamage"
 	{
 		"#format"	"{1:i}"
 		"en"		"Take {1} damage!"
 		"de"		"Steck {1} Schaden ein!"
 		"fr"		"Prend {1} de dommage!"
+		"tr"		"{1} hasar al!"
 	}
 	"Contract_NoScope"
 	{
@@ -299,11 +332,13 @@
 		"en"		"Do {1} no scopes !"
 		"de"		"Macht {1} no scopes !"
 		"fr"		"Fait {1} de no scopes !"
+		"tr"		"Yap {1} yakınlaştırma olmadan!"
 	}
 	"Contract_TeamKill"
 	{
 		"#format"	"{1:i}"
 		"en"		"Kill {1} allie(s) !"
 		"fr"		"Tuer {1} d'alliés!"
+		"tr"		"Öldür {1} müttefik(ler) !"
 	}
 }
