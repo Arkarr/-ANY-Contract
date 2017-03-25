@@ -115,9 +115,6 @@ public void OnPluginStart()
 	
 	engineName = GetEngineVersion();
 	
-	if (GetConVarInt(CVAR_MinimumPlayers) <= GetPlayerCount())
-		TIMER_ContractsDistribution = CreateTimer(GetConVarFloat(CVAR_ContractInterval), TMR_DistributeContracts, _, TIMER_REPEAT);
-	
 	if (engineName != Engine_CSS || engineName != Engine_CSGO)
 		CreateTimer(0.5, TMR_UpdateHUD, _, TIMER_REPEAT);
 	
@@ -216,6 +213,9 @@ public void OnConfigsExecuted()
 		if (AreClientCookiesCached(z))
 			OnClientCookiesCached(z);
 	}
+	
+	if (GetConVarInt(CVAR_MinimumPlayers) <= GetPlayerCount())
+		TIMER_ContractsDistribution = CreateTimer(GetConVarFloat(CVAR_ContractInterval), TMR_DistributeContracts, _, TIMER_REPEAT);
 	
 	char dbconfig[45];
 	GetConVarString(CVAR_DBConfigurationName, dbconfig, sizeof(dbconfig));
@@ -474,7 +474,7 @@ public Action CMD_GiveContract(int client, int args)
 		ReplyToTargetError(client, target_count);
 		return Plugin_Continue;
 	}
-	PrintToServer("test");
+	
 	for (int i = 0; i < target_count; i++)
 	AssignateContract(target_list[i], true, -1);
 	
@@ -596,6 +596,8 @@ public void SendContract(int client, Handle contractInfos, bool forceYES)
 	char cName[100];
 	int cObjective;
 	int cReward;
+	
+	PrintToChatAll("Contract sent.");
 	
 	GetTrieString(contractInfos, FIELD_CONTRACT_NAME, cName, sizeof(cName));
 	GetTrieString(contractInfos, FIELD_CONTRACT_ACTION, cAction, sizeof(cAction));
@@ -749,7 +751,7 @@ public void AssignateContract(int client, bool force, int contractID)
 			
 			if (GetRandomFloat(0.0, 1.0) > pourcent)
 				continue;
-			
+				
 			SendContract(client, TRIE_Contract, false);
 			
 			break;
@@ -817,6 +819,7 @@ public Action TMR_DistributeContracts(Handle tmr)
 			continue;
 		
 		IntToString(GetClientTeam(z), team, sizeof(team));
+		
 		if (StrContains(teams, team) == -1)
 			continue;
 		
