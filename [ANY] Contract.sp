@@ -734,9 +734,7 @@ public void AssignateContract(int client, bool force, int contractID)
 {
 	float pourcent = GetConVarFloat(CVAR_ChanceGetContract) / 100.0;
 	
-	PrintToChatAll("Trying to give contract to %N", client);
-	
-	if (!force && GetRandomFloat(0.0, 1.0) < pourcent)
+	if (!force && GetRandomFloat(0.0, 1.0) <= pourcent)
 		return;
 	
 	if (contractID == -1)
@@ -752,7 +750,6 @@ public void AssignateContract(int client, bool force, int contractID)
 			if (GetRandomFloat(0.0, 1.0) > pourcent)
 				continue;
 				
-			PrintToChatAll("Done %N !", client);
 			SendContract(client, TRIE_Contract, false);
 			
 			break;
@@ -820,8 +817,6 @@ public Action TMR_DistributeContracts(Handle tmr)
 			continue;
 		
 		IntToString(GetClientTeam(z), team, sizeof(team));
-		
-		PrintToChatAll("%s -> %s", teams, team);
 		
 		if (StrContains(teams, team) == -1)
 			continue;
