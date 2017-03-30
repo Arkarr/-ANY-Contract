@@ -999,6 +999,8 @@ stock bool IsValidClientContract (int iClient, bool bReplay = true)
 		return false;
 	if (!IsClientInGame(iClient))
 		return false;
+	if(IsFakeClient(iClient))
+		return false;
 	if (bReplay && (IsClientSourceTV(iClient) || IsClientReplay(iClient)))
 		return false;
 	return true;
