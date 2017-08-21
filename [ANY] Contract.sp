@@ -61,6 +61,7 @@ Handle ARRAY_Contracts;
 
 bool IsInContract[MAXPLAYERS + 1];
 bool IsInDatabase[MAXPLAYERS + 1];
+bool IsDatabaseConnected = false;
 bool g_bIsLR = false;
 
 int contractPoints[MAXPLAYERS + 1];
@@ -217,9 +218,13 @@ public void OnConfigsExecuted()
 	if (GetConVarInt(CVAR_MinimumPlayers) <= GetPlayerCount())
 		TIMER_ContractsDistribution = CreateTimer(GetConVarFloat(CVAR_ContractInterval), TMR_DistributeContracts, _, TIMER_REPEAT);
 	
-	char dbconfig[45];
-	GetConVarString(CVAR_DBConfigurationName, dbconfig, sizeof(dbconfig));
-	SQL_TConnect(GotDatabase, dbconfig);
+	
+	if(!IsDatabaseConnected)
+	{
+		char dbconfig[45];
+		GetConVarString(CVAR_DBConfigurationName, dbconfig, sizeof(dbconfig));
+		SQL_TConnect(GotDatabase, dbconfig);
+	}
 }
 
 public void OnClientConnected(int client)
@@ -407,7 +412,7 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 	return Plugin_Continue;
 }
 
-public void Shavit_OnFinish(int client, BhopStyle style, float time, int jumps, int strafes, float sync)
+public void Shavit_OnFinish(int client, int style, float time, int jumps, int strafes, float sync)
 {
 	if (IsInContract[client] && StrEqual(contractType[client], "FINISH_BHOPSHAVIT"))
 	{
@@ -427,7 +432,7 @@ public Action CMD_ResetContract(int client, int args)
 	if (client == 0)
 		PrintToServer("[Contract] %t", "Database_reset");
 	else
-		CPrintToChat(client, "%s %t", PLUGIN_TAG, "Database_reset");
+		MC_PrintToChat(client, "%s %t", PLUGIN_TAG, "Database_reset");
 	
 	for (int z = 0; z < MaxClients; z++)
 	{
@@ -443,14 +448,14 @@ public Action CMD_ResetContract(int client, int args)
 	if (client == 0)
 		PrintToServer("[Contract] %t", "Done");
 	else
-		CPrintToChat(client, "%s %t", PLUGIN_TAG, "Done");
+		MC_PrintToChat(client, "%s %t", PLUGIN_TAG, "Done");
 }
 
 public Action CMD_GiveContract(int client, int args)
 {
 	if (args < 1)
 	{
-		CPrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_GiveUsage");
+		MC_PrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_GiveUsage");
 		return Plugin_Handled;
 	}
 	
@@ -478,7 +483,7 @@ public Action CMD_GiveContract(int client, int args)
 	for (int i = 0; i < target_count; i++)
 	AssignateContract(target_list[i], true, -1);
 	
-	CPrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_GiveSucess", target_count);
+	MC_PrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_GiveSucess", target_count);
 	
 	return Plugin_Handled;
 }
@@ -490,13 +495,13 @@ public Action CMD_DisplayContractInfo(int client, int args)
 	
 	if (!IsInContract[client])
 	{
-		CPrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_None");
+		MC_PrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_None");
 		return Plugin_Handled;
 	}
 	
-	CPrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_Mission", contractDescription[client]);
-	CPrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_Progress", contractProgress[client], contractObjective[client]);
-	CPrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_Reward", contractReward[client]);
+	MC_PrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_Mission", contractDescription[client]);
+	MC_PrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_Progress", contractProgress[client], contractObjective[client]);
+	MC_PrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_Reward", contractReward[client]);
 	
 	return Plugin_Handled;
 }
@@ -520,19 +525,19 @@ public Action CMD_DisplayContractRank(int client, int args)
 	}
 	
 	if (target == -1)
-		CPrintToChat(client, "%s %t", PLUGIN_TAG, "Target_Invalid");
+		MC_PrintToChat(client, "%s %t", PLUGIN_TAG, "Target_Invalid");
 	
 	if (client == target)
-		CPrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_CompletedInfoSelf", contractAccomplishedCount[client], contractPoints[client]);
+		MC_PrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_CompletedInfoSelf", contractAccomplishedCount[client], contractPoints[client]);
 	else
-		CPrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_CompletedInfoOther", target, contractAccomplishedCount[target], contractPoints[target]);
+		MC_PrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_CompletedInfoOther", target, contractAccomplishedCount[target], contractPoints[target]);
 	
 	return Plugin_Handled;
 }
 
 public Action CMD_DisplayContractTop(int client, int args)
 {
-	CPrintToChat(client, "%s %t", PLUGIN_TAG, "Database_LoadingTop");
+	MC_PrintToChat(client, "%s %t", PLUGIN_TAG, "Database_LoadingTop");
 	SQL_TQuery(DATABASE_Contract, T_GetTop10, QUERY_ALL_CONTRACTS, client);
 	
 	return Plugin_Handled;
@@ -699,8 +704,8 @@ public void VerifyContract(int client)
 		MyJailShop_SetCredits(client, MyJailShop_GetCredits(client)+contractReward[client]);
 	}
 	
-	CPrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_ThankYou");
-	CPrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_ThankReward", contractReward[client]);
+	MC_PrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_ThankYou");
+	MC_PrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_ThankReward", contractReward[client]);
 	
 	SetClientCookie(client, COOKIE_CurrentContract, "-");
 }
@@ -857,6 +862,7 @@ public void GotDatabase(Handle owner, Handle hndl, const char[] error, any data)
 	else
 	{
 		DATABASE_Contract = hndl;
+		IsDatabaseConnected = true;
 		
 		char buffer[300];
 		if (!SQL_FastQuery(DATABASE_Contract, QUERY_INIT_DATABASE))
@@ -884,7 +890,7 @@ public void T_GetTop10(Handle db, Handle results, const char[] error, any data)
 	
 	if (results == INVALID_HANDLE)
 	{
-		CPrintToChat(client, "%t", "Database_ErrorTopPlayer", PLUGIN_TAG);
+		MC_PrintToChat(client, "%t", "Database_ErrorTopPlayer", PLUGIN_TAG);
 		LogError("Query failed >>> %s", error);
 		return;
 	}
