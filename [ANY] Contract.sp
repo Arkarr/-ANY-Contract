@@ -15,7 +15,7 @@
 #undef REQUIRE_EXTENSIONS
 #include <tf2_stocks>
 #include <cstrike>
-#include <multicolors>
+#include <morecolors>
 #pragma newdecls required
 
 //Plugin Info
@@ -432,7 +432,7 @@ public Action CMD_ResetContract(int client, int args)
 	if (client == 0)
 		PrintToServer("[Contract] %t", "Database_reset");
 	else
-		MC_PrintToChat(client, "%s %t", PLUGIN_TAG, "Database_reset");
+		CPrintToChat(client, "%s %t", PLUGIN_TAG, "Database_reset");
 	
 	for (int z = 0; z < MaxClients; z++)
 	{
@@ -448,14 +448,14 @@ public Action CMD_ResetContract(int client, int args)
 	if (client == 0)
 		PrintToServer("[Contract] %t", "Done");
 	else
-		MC_PrintToChat(client, "%s %t", PLUGIN_TAG, "Done");
+		CPrintToChat(client, "%s %t", PLUGIN_TAG, "Done");
 }
 
 public Action CMD_GiveContract(int client, int args)
 {
 	if (args < 1)
 	{
-		MC_PrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_GiveUsage");
+		CPrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_GiveUsage");
 		return Plugin_Handled;
 	}
 	
@@ -483,7 +483,7 @@ public Action CMD_GiveContract(int client, int args)
 	for (int i = 0; i < target_count; i++)
 	AssignateContract(target_list[i], true, -1);
 	
-	MC_PrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_GiveSucess", target_count);
+	CPrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_GiveSucess", target_count);
 	
 	return Plugin_Handled;
 }
@@ -495,13 +495,13 @@ public Action CMD_DisplayContractInfo(int client, int args)
 	
 	if (!IsInContract[client])
 	{
-		MC_PrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_None");
+		CPrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_None");
 		return Plugin_Handled;
 	}
 	
-	MC_PrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_Mission", contractDescription[client]);
-	MC_PrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_Progress", contractProgress[client], contractObjective[client]);
-	MC_PrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_Reward", contractReward[client]);
+	CPrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_Mission", contractDescription[client]);
+	CPrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_Progress", contractProgress[client], contractObjective[client]);
+	CPrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_Reward", contractReward[client]);
 	
 	return Plugin_Handled;
 }
@@ -525,19 +525,19 @@ public Action CMD_DisplayContractRank(int client, int args)
 	}
 	
 	if (target == -1)
-		MC_PrintToChat(client, "%s %t", PLUGIN_TAG, "Target_Invalid");
+		CPrintToChat(client, "%s %t", PLUGIN_TAG, "Target_Invalid");
 	
 	if (client == target)
-		MC_PrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_CompletedInfoSelf", contractAccomplishedCount[client], contractPoints[client]);
+		CPrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_CompletedInfoSelf", contractAccomplishedCount[client], contractPoints[client]);
 	else
-		MC_PrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_CompletedInfoOther", target, contractAccomplishedCount[target], contractPoints[target]);
+		CPrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_CompletedInfoOther", target, contractAccomplishedCount[target], contractPoints[target]);
 	
 	return Plugin_Handled;
 }
 
 public Action CMD_DisplayContractTop(int client, int args)
 {
-	MC_PrintToChat(client, "%s %t", PLUGIN_TAG, "Database_LoadingTop");
+	CPrintToChat(client, "%s %t", PLUGIN_TAG, "Database_LoadingTop");
 	SQL_TQuery(DATABASE_Contract, T_GetTop10, QUERY_ALL_CONTRACTS, client);
 	
 	return Plugin_Handled;
@@ -704,8 +704,8 @@ public void VerifyContract(int client)
 		MyJailShop_SetCredits(client, MyJailShop_GetCredits(client)+contractReward[client]);
 	}
 	
-	MC_PrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_ThankYou");
-	MC_PrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_ThankReward", contractReward[client]);
+	CPrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_ThankYou");
+	CPrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_ThankReward", contractReward[client]);
 	
 	SetClientCookie(client, COOKIE_CurrentContract, "-");
 }
@@ -890,7 +890,7 @@ public void T_GetTop10(Handle db, Handle results, const char[] error, any data)
 	
 	if (results == INVALID_HANDLE)
 	{
-		MC_PrintToChat(client, "%t", "Database_ErrorTopPlayer", PLUGIN_TAG);
+		CPrintToChat(client, "%t", "Database_ErrorTopPlayer", PLUGIN_TAG);
 		LogError("Query failed >>> %s", error);
 		return;
 	}
