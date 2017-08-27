@@ -2,6 +2,7 @@
 #include <sourcemod>
 #include <sdktools>
 #include <sdkhooks>
+#include <morecolors>
 #undef REQUIRE_PLUGIN
 #include <zephyrus_store>
 #include <warden>
@@ -15,11 +16,10 @@
 #undef REQUIRE_EXTENSIONS
 #include <tf2_stocks>
 #include <cstrike>
-#include <morecolors>
 #pragma newdecls required
 
 //Plugin Info
-#define PLUGIN_TAG						"{green}[{red}Contract{green}]{default}"
+#define PLUGIN_TAG						"\x01\x0B \x04 [ \x05 Contract\x04 ] \x01 "
 #define PLUGIN_NAME						"[ANY] Contract"
 #define PLUGIN_AUTHOR 					"Arkarr" //warden & lastrequest by shanapu
 #define PLUGIN_VERSION 					"1.6"
@@ -94,7 +94,7 @@ public Plugin myinfo =
 };
 
 public void OnPluginStart()
-{
+{	
 	RegAdminCmd("sm_givecontract", CMD_GiveContract, ADMFLAG_GENERIC, "Give a contract to a user.");
 	RegAdminCmd("sm_resetcontract", CMD_ResetContract, ADMFLAG_GENERIC, "Clear the contract table.");
 	
@@ -116,8 +116,7 @@ public void OnPluginStart()
 	
 	engineName = GetEngineVersion();
 	
-	if (engineName != Engine_CSS || engineName != Engine_CSGO)
-		CreateTimer(0.5, TMR_UpdateHUD, _, TIMER_REPEAT);
+	CreateTimer(0.5, TMR_UpdateHUD, _, TIMER_REPEAT);
 	
 	for (int z = 0; z < MaxClients; z++)
 	{
@@ -429,10 +428,13 @@ public void Shavit_OnFinish(int client, int style, float time, int jumps, int st
 
 public Action CMD_ResetContract(int client, int args)
 {
+	char message[100];
+	Format(message, sizeof(message), "%s %t", PLUGIN_TAG, "Database_reset");
+	
 	if (client == 0)
 		PrintToServer("[Contract] %t", "Database_reset");
 	else
-		CPrintToChat(client, "%s %t", PLUGIN_TAG, "Database_reset");
+		PrintMessageChat(client, message);
 	
 	for (int z = 0; z < MaxClients; z++)
 	{
@@ -445,17 +447,22 @@ public Action CMD_ResetContract(int client, int args)
 	
 	SQL_FastQuery(DATABASE_Contract, QUERY_CLEAR_CONTRACTS);
 	
+	Format(message, sizeof(message), "%s %t", PLUGIN_TAG, "Done");
+	
 	if (client == 0)
 		PrintToServer("[Contract] %t", "Done");
 	else
-		CPrintToChat(client, "%s %t", PLUGIN_TAG, "Done");
+		PrintMessageChat(client, message);
 }
 
 public Action CMD_GiveContract(int client, int args)
 {
 	if (args < 1)
 	{
-		CPrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_GiveUsage");
+		char message[100];
+		Format(message, sizeof(message), "%s %t", PLUGIN_TAG, "Contract_GiveUsage");
+		
+		PrintMessageChat(client, message);
 		return Plugin_Handled;
 	}
 	
@@ -481,9 +488,12 @@ public Action CMD_GiveContract(int client, int args)
 	}
 	
 	for (int i = 0; i < target_count; i++)
-	AssignateContract(target_list[i], true, -1);
+		AssignateContract(target_list[i], true, -1);
+		
+	char message[100];
+	Format(message, sizeof(message), "%s %t", PLUGIN_TAG, "Contract_GiveSucess", target_count);
 	
-	CPrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_GiveSucess", target_count);
+	PrintMessageChat(client, message);
 	
 	return Plugin_Handled;
 }
@@ -493,15 +503,24 @@ public Action CMD_DisplayContractInfo(int client, int args)
 	if (!IsValidClientContract (client))
 		return Plugin_Handled;
 	
+	char message[100];
+		
 	if (!IsInContract[client])
 	{
-		CPrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_None");
+		Format(message, sizeof(message), "%s %t", PLUGIN_TAG, "Contract_None");
+		
+		PrintMessageChat(client, message);
 		return Plugin_Handled;
 	}
 	
-	CPrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_Mission", contractDescription[client]);
-	CPrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_Progress", contractProgress[client], contractObjective[client]);
-	CPrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_Reward", contractReward[client]);
+	Format(message, sizeof(message), "%s %t", PLUGIN_TAG, "Contract_Mission", contractDescription[client]);
+	PrintMessageChat(client, message);
+	
+	Format(message, sizeof(message), "%s %t", PLUGIN_TAG, "Contract_Progress", contractProgress[client], contractObjective[client]);
+	PrintMessageChat(client, message);
+	
+	Format(message, sizeof(message), "%s %t", PLUGIN_TAG, "Contract_Reward", contractReward[client]);
+	PrintMessageChat(client, message);
 	
 	return Plugin_Handled;
 }
@@ -524,20 +543,34 @@ public Action CMD_DisplayContractRank(int client, int args)
 		target = FindTarget(client, sTarget, true, false);
 	}
 	
+	char message[100];
+		
 	if (target == -1)
-		CPrintToChat(client, "%s %t", PLUGIN_TAG, "Target_Invalid");
+	{
+		Format(message, sizeof(message), "%s %t", PLUGIN_TAG, "Target_Invalid");
+		PrintMessageChat(client, message);
+	}
 	
 	if (client == target)
-		CPrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_CompletedInfoSelf", contractAccomplishedCount[client], contractPoints[client]);
+	{
+		Format(message, sizeof(message), "%s %t", PLUGIN_TAG, "Contract_CompletedInfoSelf", contractAccomplishedCount[client], contractPoints[client]);
+		PrintMessageChat(client, message);
+	}
 	else
-		CPrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_CompletedInfoOther", target, contractAccomplishedCount[target], contractPoints[target]);
+	{
+		Format(message, sizeof(message), "%s %t", PLUGIN_TAG, "Contract_CompletedInfoOther", target, contractAccomplishedCount[target], contractPoints[target]);
+		PrintMessageChat(client, message);
+	}
 	
 	return Plugin_Handled;
 }
 
 public Action CMD_DisplayContractTop(int client, int args)
 {
-	CPrintToChat(client, "%s %t", PLUGIN_TAG, "Database_LoadingTop");
+	char message[100];
+	Format(message, sizeof(message), "%s %t", PLUGIN_TAG, "Database_LoadingTop");
+	
+	PrintMessageChat(client, message);
 	SQL_TQuery(DATABASE_Contract, T_GetTop10, QUERY_ALL_CONTRACTS, client);
 	
 	return Plugin_Handled;
@@ -704,8 +737,13 @@ public void VerifyContract(int client)
 		MyJailShop_SetCredits(client, MyJailShop_GetCredits(client)+contractReward[client]);
 	}
 	
-	CPrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_ThankYou");
-	CPrintToChat(client, "%s %t", PLUGIN_TAG, "Contract_ThankReward", contractReward[client]);
+	char message[100];
+	
+	Format(message, sizeof(message), "%s %t", PLUGIN_TAG, "Contract_ThankYou");
+	PrintMessageChat(client, message);
+	
+	Format(message, sizeof(message), "%s %t", PLUGIN_TAG, "Contract_ThankReward", contractReward[client]);
+	PrintMessageChat(client, message);
 	
 	SetClientCookie(client, COOKIE_CurrentContract, "-");
 }
@@ -890,7 +928,11 @@ public void T_GetTop10(Handle db, Handle results, const char[] error, any data)
 	
 	if (results == INVALID_HANDLE)
 	{
-		CPrintToChat(client, "%t", "Database_ErrorTopPlayer", PLUGIN_TAG);
+		char message[100];
+		Format(message, sizeof(message), "%t", "Database_ErrorTopPlayer", PLUGIN_TAG);
+		
+		PrintMessageChat(client, message);
+		
 		LogError("Query failed >>> %s", error);
 		return;
 	}
@@ -997,6 +1039,23 @@ stock int GetPlayerCount()
 	}
 	
 	return count;
+}
+
+stock void PrintMessageChat(int client, char[] message)
+{
+	if (engineName == Engine_CSS || engineName == Engine_CSGO)
+	{
+		char CTag[][] = {"{default}", "{green}", "{lightgreen}", "{red}", "{blue}", "{olive}"};
+	 
+	 	for (int i = 0; i < 6; i++)
+			ReplaceString(message, 100, CTag[i], "", false);
+			
+		PrintToChat(client, message);
+	}
+	else
+	{
+		CPrintToChat(client, message);
+	}
 }
 
 stock bool IsValidClientContract (int iClient, bool bReplay = true)

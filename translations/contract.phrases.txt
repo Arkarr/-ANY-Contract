@@ -177,7 +177,7 @@
 		"lv"		"Tevi atalgos ar {red}{1}{default} kredītiem."
 		"hu"		"Jutalmad {red}{1}{default} pont lesz."
 		"pt-br"		"Você será recompensado com {red}{1}{default} credito(s)."
-		"fr"		"Vous serez récompensé avec {red}{1}{default} crédits.
+		"fr"		"Vous serez récompensé avec {red}{1}{default} crédits."
 		"tr"		"Siz {red}{1}{default} kredi ile ödüllendirileceksiniz."
 	}
 	"Contract_CompletedInfoSelf"
