@@ -790,7 +790,7 @@ public void AssignateContract(int client, bool force, int contractID)
 			Handle TRIE_Contract = GetArrayCell(ARRAY_Contracts, contractCount);
 			GetTrieValue(TRIE_Contract, FIELD_CONTRACT_CHANCES, pourcent);
 			
-			if (GetRandomFloat(0.0, 1.0) <= (pourcent / 100))
+			if (GetRandomFloat(0.0, 1.0) <= pourcent)
 				continue;
 				
 			SendContract(client, TRIE_Contract, false);
