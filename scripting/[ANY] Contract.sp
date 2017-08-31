@@ -1,4 +1,4 @@
-#include <clientprefs>
+#include <clientprefs>
 #include <sourcemod>
 #include <sdktools>
 #include <sdkhooks>
@@ -56,12 +56,14 @@ Handle CVAR_UsuedStore;
 
 Handle TIMER_ContractsDistribution;
 Handle COOKIE_CurrentContract;
+Handle COOKIE_ShowHUD;
 Handle DATABASE_Contract;
 Handle ARRAY_Contracts;
 
 bool IsInContract[MAXPLAYERS + 1];
 bool IsInDatabase[MAXPLAYERS + 1];
 bool IsDatabaseConnected = false;
+bool ShowHUD[MAXPLAYERS + 1];
 bool g_bIsLR = false;
 
 int contractPoints[MAXPLAYERS + 1];
@@ -101,6 +103,7 @@ public void OnPluginStart()
 	RegConsoleCmd("sm_contract", CMD_DisplayContractInfo, "Display your current contract info.");
 	RegConsoleCmd("sm_contractlevel", CMD_DisplayContractRank, "Display your contract rank.");
 	RegConsoleCmd("sm_contracttop", CMD_DisplayContractTop, "Display the first 10 best contract rank.");
+	RegConsoleCmd("sm_contracthud", CMD_ToggleHUD, "Remove/Display your current contract in HUD");
 	//RegConsoleCmd("sm_test", CMD_test);
 	
 	CVAR_DBConfigurationName = CreateConVar("sm_database_configuration_name", "storage-local", "Configuration name in database.cfg, by default, all results are saved in the sqlite database.");
@@ -113,6 +116,7 @@ public void OnPluginStart()
 	AutoExecConfig(true, "contract");
 	
 	COOKIE_CurrentContract = RegClientCookie("Contract_CurrentContractName", "Contain the name of the current contract.", CookieAccess_Private);
+	COOKIE_ShowHUD = RegClientCookie("Contract_ShowHUD", "Bool toggle show player contract HUD.", CookieAccess_Public);
 	
 	engineName = GetEngineVersion();
 	
@@ -183,6 +187,11 @@ public void OnClientCookiesCached(int client)
 	}
 	
 	ExplodeString(sCookieValue, "¢", sContractNameValue, sizeof sContractNameValue, sizeof sContractNameValue[]);
+	
+	GetClientCookie(client, COOKIE_ShowHUD, sCookieValue, sizeof(sCookieValue));
+	
+	if (StringToInt(sCookieValue) != 1)
+		ShowHUD[client] = false;
 	
 	int contractCount = GetArraySize(ARRAY_Contracts);
 	while (contractCount > 0)
@@ -576,6 +585,23 @@ public Action CMD_DisplayContractTop(int client, int args)
 	return Plugin_Handled;
 }
 
+public Action CMD_ToggleHUD(int client, int args)
+{
+	if (ShowHUD[client])
+	{
+		ShowHUD[client] = false;
+		SetClientCookie(client, COOKIE_ShowHUD, "0");
+		CPrintToChat(client, "%s %t", PLUGIN_TAG, "HUD_disabled");
+	}
+	else
+	{
+		ShowHUD[client] = true;
+		SetClientCookie(client, COOKIE_ShowHUD, "1");
+		CPrintToChat(client, "%s %t", PLUGIN_TAG, "HUD_enabled");
+	}
+	
+	return Plugin_Handled;
+}
 //Function
 public bool CheckKillMethod(int client)
 {
@@ -824,7 +850,7 @@ public Action TMR_UpdateHUD(Handle tmr)
 {
 	for (int i = 1; i <= MaxClients; i++)
 	{
-		if (IsClientInGame(i) && IsPlayerAlive(i) && IsInContract[i])
+		if (IsClientInGame(i) && IsPlayerAlive(i) && IsInContract[i] && ShowHUD[i])
 		{
 			GetClientAbsOrigin(i, newPosition);
 			g_fdistance = GetVectorDistance(lastPosition[i], newPosition);
@@ -839,7 +865,7 @@ public Action TMR_UpdateHUD(Handle tmr)
 	
 	for (int z = 0; z < MaxClients; z++)
 	{
-		if (!IsInContract[z] || !IsValidClientContract (z))
+		if (!IsInContract[z] || !IsValidClientContract (z) || !ShowHUD[z])
 			continue;
 		
 		SetHudTextParams(0.02, 0.0, 0.8, 255, 0, 0, 200);

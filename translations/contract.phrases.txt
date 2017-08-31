@@ -21,6 +21,16 @@
 		"fr"		"Cible invalide"
 		"tr"		"Geçersiz hedef."
 	}
+	"HUD_disabled"
+	{
+		"en"		"Contracts HUD disabled"
+		"de"		"Contracts HUD deaktiviert"
+	}
+	"HUD_enabled"
+	{
+		"en"		"Contracts HUD enabled"
+		"de"		"Contracts HUD aktiviert"
+	}
 	//Database
 	"Database_reset"
 	{
@@ -329,16 +339,17 @@
 	"Contract_NoScope"
 	{
 		"#format"	"{1:i}"
-		"en"		"Do {1} no scopes !"
-		"de"		"Macht {1} no scopes !"
-		"fr"		"Fait {1} de no scopes !"
+		"en"		"Do {1} no scopes!"
+		"de"		"Macht {1} no scopes!"
+		"fr"		"Fait {1} de no scopes!"
 		"tr"		"Yap {1} yakınlaştırma olmadan!"
 	}
 	"Contract_TeamKill"
 	{
 		"#format"	"{1:i}"
-		"en"		"Kill {1} allie(s) !"
+		"en"		"Kill {1} allie(s)!"
+		"de"		"Töte {1} Teammitglieder!"
 		"fr"		"Tuer {1} d'alliés!"
-		"tr"		"Öldür {1} müttefik(ler) !"
+		"tr"		"Öldür {1} müttefik(ler)!"
 	}
 }
