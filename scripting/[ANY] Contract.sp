@@ -9,6 +9,7 @@
 #include <hosties>
 #include <lastrequest>
 #include <myjailshop>
+#include <myjailbreak>
 #include <smstore/store/store-backend>
 #include <smrpg>
 #include <shavit>
@@ -389,6 +390,26 @@ public void OnRoundEnd(Handle event, const char[] name, bool dontBroadcast)
 	g_bIsLR = false;
 }
 
+public void MyJailbreak_OnEventDayEnd(char[] EventDayName, int winner)
+{
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (IsValidClient(i) && IsInContract[i] && IsPlayerAlive(i))
+		{
+			if(winner > 1)
+			{
+				if (GetClientTeam(i) != winner)
+					continue;
+			}
+			
+			if (StrEqual(contractType[i], "EVENT_DAYS"))
+			{
+				contractProgress[i]++;
+				VerifyContract(i);
+			}
+		}
+	}
+}
 public int OnAvailableLR(int Announced)
 {
 	g_bIsLR = true;
@@ -669,6 +690,8 @@ public void SendContract(int client, Handle contractInfos, bool forceYES)
 		Format(sObjectiv, sizeof(sObjectiv), "%t", "Contract_NoScope", cObjective);
 	else if (StrEqual(cAction, "TEAM_KILL"))
 		Format(sObjectiv, sizeof(sObjectiv), "%t", "Contract_TeamKill", cObjective);
+	else if (StrEqual(cAction, "EVENT_DAYS"))
+		Format(sObjectiv, sizeof(sObjectiv), "%t", "Contract_EventDays", cObjective);
 	
 	contractReward[client] = cReward;
 	contractProgress[client] = 0;

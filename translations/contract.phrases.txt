@@ -341,4 +341,10 @@
 		"fr"		"Tuer {1} d'alliés!"
 		"tr"		"Öldür {1} müttefik(ler) !"
 	}
+	"Contract_EventDays"
+	{
+		"#format"	"{1:i}"
+		"en"		"Win {1} Event Days!"
+		"en"		"Gewinne {1} Event Days!"
+	}
 }
