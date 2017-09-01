@@ -274,7 +274,10 @@ public void OnClientDisconnect(int client)
 
 //Event callback
 public void OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast)
-{
+{	
+	if (GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER)
+		return;
+				
 	int client = GetClientOfUserId(GetEventInt(event, "userid"));
 	int attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
 		
@@ -296,9 +299,6 @@ public void OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 		
 		if (engineName == Engine_TF2)
 		{
-			if (GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER)
-				return;
-			
 			if ((customkill == TF_CUSTOM_HEADSHOT || customkill == TF_CUSTOM_HEADSHOT_DECAPITATION))
 			{
 				contractProgress[attacker]++;
