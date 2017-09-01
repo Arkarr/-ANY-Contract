@@ -285,8 +285,11 @@ public void OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 	{
 		if(attacker != client && GetClientTeam(attacker) == GetClientTeam(client))
 		{
-			contractProgress[attacker]++;
-			VerifyContract(attacker);
+			if (CheckKillMethod(attacker))
+			{
+				contractProgress[attacker]++;
+				VerifyContract(attacker);
+			}
 		}
 	}
 	
@@ -301,16 +304,22 @@ public void OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 		{
 			if ((customkill == TF_CUSTOM_HEADSHOT || customkill == TF_CUSTOM_HEADSHOT_DECAPITATION))
 			{
-				contractProgress[attacker]++;
-				VerifyContract(attacker);
+				if (CheckKillMethod(attacker))
+				{
+					contractProgress[attacker]++;
+					VerifyContract(attacker);
+				}
 			}
 		}
 		else if (engineName == Engine_CSGO || engineName == Engine_CSS)
 		{
 			if (GetEventInt(event, "headshot") == 1)
 			{
-				contractProgress[attacker]++;
-				VerifyContract(attacker);
+				if (CheckKillMethod(attacker))
+				{
+					contractProgress[attacker]++;
+					VerifyContract(attacker);
+				}
 			}
 		}
 	}
@@ -319,9 +328,11 @@ public void OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 	{
 		if((StrContains(weapon, "awp") != -1 || StrContains(weapon, "ssg08") != -1 || StrContains(weapon, "scout") != -1) || !(0 < GetEntProp(attacker, Prop_Data, "m_iFOV") < GetEntProp(attacker, Prop_Data, "m_iDefaultFOV")))
 		{
-			contractProgress[attacker]++;
-			
-			VerifyContract(attacker);
+			if (CheckKillMethod(attacker))
+			{
+				contractProgress[attacker]++;
+				VerifyContract(attacker);
+			}
 		}
 	}
 	
@@ -418,6 +429,7 @@ public void MyJailbreak_OnEventDayEnd(char[] EventDayName, int winner)
 		}
 	}
 }
+
 public int OnAvailableLR(int Announced)
 {
 	g_bIsLR = true;
@@ -427,14 +439,20 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 {
 	if (IsValidClientContract (victim) && IsInContract[victim] && StrEqual(contractType[victim], "TAKE_DAMAGE"))
 	{
-		contractProgress[victim] += RoundToCeil(damage);
-		VerifyContract(victim);
+		if (CheckKillMethod(attacker))
+		{
+			contractProgress[victim] += RoundToCeil(damage);
+			VerifyContract(victim);
+		}
 	}
 	
 	if (IsValidClientContract (attacker) && IsInContract[attacker] && StrEqual(contractType[attacker], "DEAL_DAMAGE"))
 	{
-		contractProgress[attacker] += RoundToCeil(damage);
-		VerifyContract(attacker);
+		if (CheckKillMethod(attacker))
+		{
+			contractProgress[attacker] += RoundToCeil(damage);
+			VerifyContract(attacker);
+		}
 	}
 	
 	return Plugin_Continue;
