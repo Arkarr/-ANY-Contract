@@ -393,7 +393,8 @@
 	{
 		"#format"	"{1:i}"
 		"en"		"Win {1} Event Days!"
-		"en"		"Gewinne {1} Event Days!"
+		"de"		"Gewinne {1} Event Days!"
 		"nl"		"Win {1} Event Dagen!"
+		"fr"		"Gagner {1} Event Days!"
 	}
 }
