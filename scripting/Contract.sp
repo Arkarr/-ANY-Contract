@@ -9,7 +9,7 @@
 #include <hosties>
 #include <lastrequest>
 #include <myjailshop>
-#include <smstore/store/store-backend>
+#include <store-backend>
 #include <smrpg>
 #include <shavit>
 #pragma newdecls optional
@@ -374,7 +374,7 @@ public void OnRoundEnd(Handle event, const char[] name, bool dontBroadcast)
 	
 	for (int i = 1; i <= MaxClients; i++)
 	{
-		if (IsValidClient(i) && IsInContract[i] && IsPlayerAlive(i))
+		if (IsValidClientContract(i) && IsInContract[i] && IsPlayerAlive(i))
 		{
 			if (StrEqual(contractType[i], "WARDEN_ROUNDS"))
 			{
@@ -404,7 +404,7 @@ public void MyJailbreak_OnEventDayEnd(char[] EventDayName, int winner)
 {
 	for (int i = 1; i <= MaxClients; i++)
 	{
-		if (IsValidClient(i) && IsInContract[i] && IsPlayerAlive(i))
+		if (IsValidClientContract(i) && IsInContract[i] && IsPlayerAlive(i))
 		{
 			if(winner > 1)
 			{
@@ -826,25 +826,34 @@ public void SaveIntoDatabase(int client)
 public void AssignateContract(int client, bool force, int contractID)
 {
 	float pourcent = GetConVarFloat(CVAR_ChanceGetContract) / 100.0;
+	float ch = GetRandomFloat(0.0, 1.0);
+	PrintToServer("GET CONTRACT CHANCE %.2f <= %.2f", ch, pourcent);
 	
-	if (!force && GetRandomFloat(0.0, 1.0) <= pourcent)
+	if (force == false && ch > pourcent)
 		return;
-	
+		
+	PrintToServer("OK!");
+	PrintToServer("CONTRACT ID : %i", contractID);
 	if (contractID == -1)
 	{
+		PrintToServer("OK!");
+		
 		int contractCount = GetArraySize(ARRAY_Contracts);
 		while (contractCount > 0)
 		{
 			contractCount--;
 			
-			Handle TRIE_Contract = GetArrayCell(ARRAY_Contracts, contractCount);
+			Handle TRIE_Contract = GetArrayCell(ARRAY_Contracts, GetRandomInt(0, contractCount-1));
+			
 			GetTrieValue(TRIE_Contract, FIELD_CONTRACT_CHANCES, pourcent);
 			
+			if(pourcent > 1.0)
+				pourcent /= 100;
+				
 			if (GetRandomFloat(0.0, 1.0) <= pourcent)
 				continue;
 				
 			SendContract(client, TRIE_Contract, false);
-			
 			break;
 		}
 		
@@ -908,13 +917,15 @@ public Action TMR_DistributeContracts(Handle tmr)
 	{
 		if (!IsValidClientContract (z) || IsInContract[z])
 			continue;
-		
+			
+		PrintToServer("*************");
 		IntToString(GetClientTeam(z), team, sizeof(team));
 		
 		if (StrContains(teams, team) == -1)
 			continue;
 		
 		AssignateContract(z, false, -1);
+		PrintToServer("*************");
 	}
 }
 
