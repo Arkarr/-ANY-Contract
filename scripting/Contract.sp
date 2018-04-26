@@ -456,7 +456,7 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 	return Plugin_Continue;
 }
 
-public void Shavit_OnFinish(int client, int style, float time, int jumps, int strafes, float sync)
+public void Shavit_OnFinish(int client, BhopStyle style, float time, int jumps, int strafes, float sync)
 {
 	if (GetConVarInt(CVAR_MinimumPlayersProgress) <= GetPlayerCount())
 		return;
