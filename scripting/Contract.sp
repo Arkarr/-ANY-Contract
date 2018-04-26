@@ -22,7 +22,7 @@
 #define PLUGIN_TAG						"\x01\x0B \x04 [ \x05 Contract\x04 ] \x01 "
 #define PLUGIN_NAME						"[ANY] Contract"
 #define PLUGIN_AUTHOR 					"Arkarr" //warden & lastrequest by shanapu
-#define PLUGIN_VERSION 					"1.6"
+#define PLUGIN_VERSION 					"1.7"
 #define PLUGIN_DESCRIPTION 				"Assign contract to player and let them a certain period of time to do it to earn extra credits."
 //KeyValue fields
 #define FIELD_CONTRACT_NAME 			"Contract Name"
