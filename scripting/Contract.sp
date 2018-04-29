@@ -22,7 +22,7 @@
 #define PLUGIN_TAG						"\x01\x0B \x04 [ \x05 Contract\x04 ] \x01 "
 #define PLUGIN_NAME						"[ANY] Contract"
 #define PLUGIN_AUTHOR 					"Arkarr" //warden & lastrequest by shanapu
-#define PLUGIN_VERSION 					"1.6"
+#define PLUGIN_VERSION 					"1.7"
 #define PLUGIN_DESCRIPTION 				"Assign contract to player and let them a certain period of time to do it to earn extra credits."
 //KeyValue fields
 #define FIELD_CONTRACT_NAME 			"Contract Name"
@@ -52,6 +52,7 @@ Handle CVAR_ChanceGetContract;
 Handle CVAR_TeamRestrictions;
 Handle CVAR_ContractInterval;
 Handle CVAR_MinimumPlayers;
+Handle CVAR_MinimumPlayersProgress;
 Handle CVAR_UsuedStore;
 
 Handle TIMER_ContractsDistribution;
@@ -111,6 +112,7 @@ public void OnPluginStart()
 	CVAR_TeamRestrictions = CreateConVar("sm_contract_teams", "2;3", "Team index wich can get contract. 2 = RED/T 3 = BLU/CT");
 	CVAR_UsuedStore = CreateConVar("sm_contract_store_select", "NONE", "NONE=No store usage/ZEPHYRUS=use zephyrus store/SMSTORE=use sourcemod store/MYJS=use MyJailShop");
 	CVAR_MinimumPlayers = CreateConVar("sm_contract_minimum_players", "2", "How much player needed before receving an contract.", _, true, 1.0);
+	CVAR_MinimumPlayersProgress = CreateConVar("sm_contract_minimum_players_progress", "2", "How much player need to progress with a contract.", _, true, 1.0);
 	CVAR_ContractInterval = CreateConVar("sm_contract_interval", "300", "Time (in seconds) before giving a new contract if any.", _, true, 1.0);
 	
 	AutoExecConfig(true, "contract");
@@ -279,6 +281,9 @@ public void OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 {	
 	if (GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER)
 		return;
+		
+	if (GetConVarInt(CVAR_MinimumPlayersProgress) <= GetPlayerCount())
+		return;
 				
 	int client = GetClientOfUserId(GetEventInt(event, "userid"));
 	int attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
@@ -372,6 +377,9 @@ public void OnRoundEnd(Handle event, const char[] name, bool dontBroadcast)
 	if (!LibraryExists("warden") && !LibraryExists("hosties"))
 		return;
 	
+	if (GetConVarInt(CVAR_MinimumPlayersProgress) <= GetPlayerCount())
+		return;
+	
 	for (int i = 1; i <= MaxClients; i++)
 	{
 		if (IsValidClientContract(i) && IsInContract[i] && IsPlayerAlive(i))
@@ -402,6 +410,9 @@ public void OnRoundEnd(Handle event, const char[] name, bool dontBroadcast)
 
 public void MyJailbreak_OnEventDayEnd(char[] EventDayName, int winner)
 {
+	if (GetConVarInt(CVAR_MinimumPlayersProgress) <= GetPlayerCount())
+		return;
+		
 	for (int i = 1; i <= MaxClients; i++)
 	{
 		if (IsValidClientContract(i) && IsInContract[i] && IsPlayerAlive(i))
@@ -427,6 +438,9 @@ public int OnAvailableLR(int Announced)
 
 public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &damage, int &damagetype)
 {
+	if (GetConVarInt(CVAR_MinimumPlayersProgress) <= GetPlayerCount())
+		return Plugin_Continue;
+		
 	if (IsValidClientContract (victim) && IsInContract[victim] && StrEqual(contractType[victim], "TAKE_DAMAGE"))
 	{
 		contractProgress[victim] += RoundToCeil(damage);
@@ -442,8 +456,11 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 	return Plugin_Continue;
 }
 
-public void Shavit_OnFinish(int client, int style, float time, int jumps, int strafes, float sync)
+public void Shavit_OnFinish(int client, BhopStyle style, float time, int jumps, int strafes, float sync)
 {
+	if (GetConVarInt(CVAR_MinimumPlayersProgress) <= GetPlayerCount())
+		return;
+		
 	if (IsInContract[client] && StrEqual(contractType[client], "FINISH_BHOPSHAVIT"))
 	{
 		contractProgress[client]++;
