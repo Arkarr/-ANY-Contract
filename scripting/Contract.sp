@@ -227,7 +227,7 @@ public void OnConfigsExecuted()
 			OnClientCookiesCached(z);
 	}
 	
-	if (GetConVarInt(CVAR_MinimumPlayers) <= GetPlayerCount())
+	if (GetConVarInt(CVAR_MinimumPlayers) >= GetPlayerCount())
 		TIMER_ContractsDistribution = CreateTimer(GetConVarFloat(CVAR_ContractInterval), TMR_DistributeContracts, _, TIMER_REPEAT);
 	
 	
@@ -243,7 +243,7 @@ public void OnClientConnected(int client)
 {
 	if (TIMER_ContractsDistribution == INVALID_HANDLE)
 	{
-		if (GetConVarInt(CVAR_MinimumPlayers) <= GetPlayerCount())
+		if (GetConVarInt(CVAR_MinimumPlayers) >= GetPlayerCount())
 			TIMER_ContractsDistribution = CreateTimer(GetConVarFloat(CVAR_ContractInterval), TMR_DistributeContracts, _, TIMER_REPEAT);
 	}
 	
@@ -260,7 +260,7 @@ public void OnClientPutInServer(int client)
 
 public void OnClientDisconnect(int client)
 {
-	if (!IsValidClientContract (client))
+	if (!IsValidClientContract(client))
 		return;
 	
 	if (TIMER_ContractsDistribution != INVALID_HANDLE)
@@ -282,7 +282,7 @@ public void OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 	if (GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER)
 		return;
 		
-	if (GetConVarInt(CVAR_MinimumPlayersProgress) <= GetPlayerCount())
+	if (GetConVarInt(CVAR_MinimumPlayersProgress) >= GetPlayerCount())
 		return;
 				
 	int client = GetClientOfUserId(GetEventInt(event, "userid"));
@@ -297,7 +297,7 @@ public void OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 		}
 	}
 	
-	if (!IsValidClientContract (client))
+	if (!IsValidClientContract(client))
 		return;
 	
 	if (IsInContract[attacker] && StrEqual(contractType[attacker], "HEADSHOT"))
@@ -377,7 +377,7 @@ public void OnRoundEnd(Handle event, const char[] name, bool dontBroadcast)
 	if (!LibraryExists("warden") && !LibraryExists("hosties"))
 		return;
 	
-	if (GetConVarInt(CVAR_MinimumPlayersProgress) <= GetPlayerCount())
+	if (GetConVarInt(CVAR_MinimumPlayersProgress) >= GetPlayerCount())
 		return;
 	
 	for (int i = 1; i <= MaxClients; i++)
@@ -410,7 +410,7 @@ public void OnRoundEnd(Handle event, const char[] name, bool dontBroadcast)
 
 public void MyJailbreak_OnEventDayEnd(char[] EventDayName, int winner)
 {
-	if (GetConVarInt(CVAR_MinimumPlayersProgress) <= GetPlayerCount())
+	if (GetConVarInt(CVAR_MinimumPlayersProgress) >= GetPlayerCount())
 		return;
 		
 	for (int i = 1; i <= MaxClients; i++)
@@ -438,7 +438,7 @@ public int OnAvailableLR(int Announced)
 
 public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &damage, int &damagetype)
 {
-	if (GetConVarInt(CVAR_MinimumPlayersProgress) <= GetPlayerCount())
+	if (GetConVarInt(CVAR_MinimumPlayersProgress) >= GetPlayerCount())
 		return Plugin_Continue;
 		
 	if (IsValidClientContract (victim) && IsInContract[victim] && StrEqual(contractType[victim], "TAKE_DAMAGE"))
@@ -458,7 +458,7 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 
 public void Shavit_OnFinish(int client, int style, float time, int jumps, int strafes, float sync)
 {
-	if (GetConVarInt(CVAR_MinimumPlayersProgress) <= GetPlayerCount())
+	if (GetConVarInt(CVAR_MinimumPlayersProgress) >= GetPlayerCount())
 		return;
 		
 	if (IsInContract[client] && StrEqual(contractType[client], "FINISH_BHOPSHAVIT"))
@@ -844,17 +844,12 @@ public void AssignateContract(int client, bool force, int contractID)
 {
 	float pourcent = GetConVarFloat(CVAR_ChanceGetContract) / 100.0;
 	float ch = GetRandomFloat(0.0, 1.0);
-	PrintToServer("GET CONTRACT CHANCE %.2f <= %.2f", ch, pourcent);
-	
+
 	if (force == false && ch > pourcent)
 		return;
 		
-	PrintToServer("OK!");
-	PrintToServer("CONTRACT ID : %i", contractID);
 	if (contractID == -1)
-	{
-		PrintToServer("OK!");
-		
+	{		
 		int contractCount = GetArraySize(ARRAY_Contracts);
 		while (contractCount > 0)
 		{
@@ -935,14 +930,12 @@ public Action TMR_DistributeContracts(Handle tmr)
 		if (!IsValidClientContract (z) || IsInContract[z])
 			continue;
 			
-		PrintToServer("*************");
 		IntToString(GetClientTeam(z), team, sizeof(team));
 		
 		if (StrContains(teams, team) == -1)
 			continue;
 		
 		AssignateContract(z, false, -1);
-		PrintToServer("*************");
 	}
 }
 
