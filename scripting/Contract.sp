@@ -100,6 +100,7 @@ public void OnPluginStart()
 {	
 	RegAdminCmd("sm_givecontract", CMD_GiveContract, ADMFLAG_GENERIC, "Give a contract to a user.");
 	RegAdminCmd("sm_resetcontract", CMD_ResetContract, ADMFLAG_GENERIC, "Clear the contract table.");
+	RegAdminCmd("sm_contract_weapon_class", CMD_ViewWeaponClass,  ADMFLAG_GENERIC, "Display your current weapon class, for configuration");
 	
 	RegConsoleCmd("sm_contract", CMD_DisplayContractInfo, "Display your current contract info.");
 	RegConsoleCmd("sm_contractlevel", CMD_DisplayContractRank, "Display your contract rank.");
@@ -468,11 +469,30 @@ public void Shavit_OnFinish(int client, int style, float time, int jumps, int st
 	}
 }
 
-//Command callback.
-/*public Action CMD_test(int client, int args)
+public Action CMD_ViewWeaponClass(int client, int args)
 {
-	OnClientDisconnect(client);
-}*/
+	if(client == 0)
+	{
+		PrintToServer("Most powerful weapon on earth; keyboard.");
+		return Plugin_Handled;
+	}
+		
+	int w = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
+	
+	if(IsValidEdict(w))
+	{
+		char classname[45];
+		GetEdictClassname(w, classname, sizeof(classname));
+		
+		PrintToServer(">>> %s", classname);
+	}
+	else
+	{
+		PrintToServer(">>> ?? Invalid weapon ??");
+	}
+	
+	return Plugin_Handled;
+}
 
 public Action CMD_ResetContract(int client, int args)
 {
@@ -501,6 +521,8 @@ public Action CMD_ResetContract(int client, int args)
 		PrintToServer("[Contract] %t", "Done");
 	else
 		PrintMessageChat(client, message);
+		
+	return Plugin_Handled;
 }
 
 public Action CMD_GiveContract(int client, int args)
