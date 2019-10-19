@@ -432,7 +432,7 @@ public void MyJailbreak_OnEventDayEnd(char[] EventDayName, int winner)
 		}
 	}
 }
-public int OnAvailableLR(int Announced)
+public void OnAvailableLR(int Announced)
 {
 	g_bIsLR = true;
 }
