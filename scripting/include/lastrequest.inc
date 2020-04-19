@@ -103,10 +103,6 @@ public void __pl_lastrequest_SetNTVOptional()
 }
 
 
-typedef FuncLastRequest public(type, prisoner, guard);
-typedef FuncProcessLR public(Handle array, iLRNumber);
-
-
 forward void OnStartLR(int PrisonerIndex, int GuardIndex, int LR_Type);
 
 forward void OnAvailableLR(int Announced);
@@ -146,7 +142,7 @@ native int IsClientInLastRequest(int client);
  * @param AutoStart				Whether the LR will start immediately (true) or if additional menus are needed (false).
  * @return						The type index of the LR added.
  */
-native int AddLastRequestToList(FuncProcessLR Start, FuncLastRequest Stop, char[] LR_Name, bool AutoStart = true);
+//native int AddLastRequestToList(FuncProcessLR Start, FuncLastRequest Stop, char[] LR_Name, bool AutoStart = true);
 
 /**
  * Removes a custom last request.
@@ -157,7 +153,7 @@ native int AddLastRequestToList(FuncProcessLR Start, FuncLastRequest Stop, char[
  * @noreturn						
  * @error                     	Last request not found.
  */
-native void RemoveLastRequestFromList(FuncProcessLR Start, FuncLastRequest Stop, char[] LR_Name);
+//native void RemoveLastRequestFromList(FuncProcessLR Start, FuncLastRequest Stop, char[] LR_Name);
 
 /**
  * Provides iteration for all active last requests.
@@ -166,7 +162,7 @@ native void RemoveLastRequestFromList(FuncProcessLR Start, FuncLastRequest Stop,
  * @param iLastRequestIndex		Index number of last request in array.
  * @return						Number of last requests in progress.
  */
-native int ProcessAllLastRequests(FuncProcessLR ProcessLR, int iLastRequestIndex);
+//native int ProcessAllLastRequests(FuncProcessLR ProcessLR, int iLastRequestIndex);
 
 /**
  * Alters the boolean array determining if a given client is considered a rebel.

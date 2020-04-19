@@ -5,18 +5,16 @@
 #include <morecolors>
 #undef REQUIRE_PLUGIN
 #include <zephyrus_store>
-#include <warden>
 #include <hosties>
+#include <warden>
 #include <lastrequest>
 #include <myjailshop>
-#include <store-backend>
 #include <smrpg>
+#include <store-backend>
 #include <shavit>
-#pragma newdecls optional
 #undef REQUIRE_EXTENSIONS
 #include <tf2_stocks>
 #include <cstrike>
-#pragma newdecls required
 
 //Plugin Info
 #define PLUGIN_TAG						"\x01\x0B \x04 [ \x05 Contract\x04 ] \x01 "
@@ -54,6 +52,7 @@ Handle CVAR_ContractInterval;
 Handle CVAR_MinimumPlayers;
 Handle CVAR_MinimumPlayersProgress;
 Handle CVAR_UsuedStore;
+Handle CVAR_HUDChannel;
 
 Handle TIMER_ContractsDistribution;
 Handle COOKIE_CurrentContract;
@@ -115,6 +114,7 @@ public void OnPluginStart()
 	CVAR_MinimumPlayers = CreateConVar("sm_contract_minimum_players", "2", "How much player needed before receving an contract.", _, true, 1.0);
 	CVAR_MinimumPlayersProgress = CreateConVar("sm_contract_minimum_players_progress", "2", "How much player need to progress with a contract.", _, true, 1.0);
 	CVAR_ContractInterval = CreateConVar("sm_contract_interval", "300", "Time (in seconds) before giving a new contract if any.", _, true, 1.0);
+	CVAR_HUDChannel = CreateConVar("sm_contract_hud_channel", "-1.0", "Channel to display HUD on.", _, true, -1.0);
 	
 	AutoExecConfig(true, "contract");
 	
@@ -936,9 +936,9 @@ public Action TMR_UpdateHUD(Handle tmr)
 			continue;
 		
 		SetHudTextParams(0.02, 0.0, 0.8, 255, 0, 0, 200);
-		ShowHudText(z, -1, contractDescription[z]);
+		ShowHudText(z, GetConVarInt(CVAR_HUDChannel), contractDescription[z]);
 		SetHudTextParams(0.02, 0.03, 0.8, 255, 0, 0, 200);
-		ShowHudText(z, -1, "%i / %i", contractProgress[z], contractObjective[z]);
+		ShowHudText(z, GetConVarInt(CVAR_HUDChannel), "%i / %i", contractProgress[z], contractObjective[z]);
 	}
 }
 
