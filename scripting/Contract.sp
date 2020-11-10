@@ -135,6 +135,13 @@ public void OnPluginStart()
 	}
 	
 	HookEvent("player_death", OnPlayerDeath);
+	
+	HookEvent("witch_killed", L4D2_OnWitchKilled);
+	HookEvent("tank_killed", L4D2_OnTankKilled);
+	HookEvent("charger_killed", L4D2_OnChargerKilled);
+	HookEvent("spitter_killed", L4D2_OnSpitterKilled);
+	HookEvent("jockey_killed", L4D2_OnJockeyKilled);
+	
 	HookEvent("round_end", OnRoundEnd);
 	
 	LoadTranslations("common.phrases");
@@ -278,6 +285,76 @@ public void OnClientDisconnect(int client)
 }
 
 //Event callback
+public void L4D2_OnTankKilled(Handle event, const char[] name, bool dontBroadcast)
+{
+	if (GetConVarInt(CVAR_MinimumPlayersProgress) >= GetPlayerCount())
+		return;
+		
+	int attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
+	
+	if (IsInContract[attacker] && StrEqual(contractType[attacker], "L4D2_KILL_TANK"))
+	{
+		contractProgress[attacker]++;
+		VerifyContract(attacker);
+	}
+}
+
+public void L4D2_OnChargerKilled(Handle event, const char[] name, bool dontBroadcast)
+{
+	if (GetConVarInt(CVAR_MinimumPlayersProgress) >= GetPlayerCount())
+		return;
+		
+	int attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
+	
+	if (IsInContract[attacker] && StrEqual(contractType[attacker], "L4D2_KILL_CHARGER"))
+	{
+		contractProgress[attacker]++;
+		VerifyContract(attacker);
+	}
+}
+
+public void L4D2_OnSpitterKilled(Handle event, const char[] name, bool dontBroadcast)
+{
+	if (GetConVarInt(CVAR_MinimumPlayersProgress) >= GetPlayerCount())
+		return;
+		
+	int attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
+	
+	if (IsInContract[attacker] && StrEqual(contractType[attacker], "L4D2_KILL_SPITTER"))
+	{
+		contractProgress[attacker]++;
+		VerifyContract(attacker);
+	}
+}
+
+public void L4D2_OnJockeyKilled(Handle event, const char[] name, bool dontBroadcast)
+{
+	if (GetConVarInt(CVAR_MinimumPlayersProgress) >= GetPlayerCount())
+		return;
+		
+	int attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
+	
+	if (IsInContract[attacker] && StrEqual(contractType[attacker], "L4D2_KILL_JOCKEY"))
+	{
+		contractProgress[attacker]++;
+		VerifyContract(attacker);
+	}
+}
+
+public void L4D2_OnWitchKilled(Handle event, const char[] name, bool dontBroadcast)
+{
+	if (GetConVarInt(CVAR_MinimumPlayersProgress) >= GetPlayerCount())
+		return;
+		
+	int attacker = GetClientOfUserId(GetEventInt(event, "userid"));
+	
+	if (IsInContract[attacker] && StrEqual(contractType[attacker], "L4D2_KILL_WITCH"))
+	{
+		contractProgress[attacker]++;
+		VerifyContract(attacker);
+	}
+}
+
 public void OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 {	
 	if (GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER)
