@@ -11,6 +11,7 @@
 		"fr"		"Fait!"
 		"tr"		"Tamamlandı!"
 		"nl"		"Klaar!"
+		"ru"		"Выполнено!"
 	}
 	"Target_Invalid"
 	{
@@ -22,6 +23,7 @@
 		"fr"		"Cible invalide"
 		"tr"		"Geçersiz hedef."
 		"nl"		"Doelwit incorrect!"
+		"ru"		"Неверная цель."
 	}
 	"HUD_disabled"
 	{
@@ -29,6 +31,7 @@
 		"de"		"Contracts HUD deaktiviert"
 		"nl"		"Contracts HUD uitgeschakeld"
 		"pt"		"Contracts HUD desativada"
+		"ru"		"Интерфейс контрактов отключен"
 	}
 	"HUD_enabled"
 	{
@@ -36,6 +39,7 @@
 		"de"		"Contracts HUD aktiviert"
 		"nl"		"Contracts HUD ingeschakeld"
 		"pt"		"Contracts HUD ativada"
+		"ru"		"Интерфейс контрактов включен"
 	}
 	//Database
 	"Database_reset"
@@ -48,6 +52,7 @@
 		"fr"		"Remise a 0 de la base de données"
 		"tr"		"Veritabanı sıfırlanıyor..."
 		"nl"		"Database opnieuw aan het instellen..."
+		"ru"		"Сброс базы данных..."
 	}
 	"Database_LoadingTop"
 	{
@@ -59,6 +64,7 @@
 		"fr"		"Chargement des meilleurs contrats..."
 		"tr"		"En iyi sözleşmeler listeleniyor..."
 		"nl"		"Top contracts spelers aan het laden..."
+		"ru"		"Загрузка лучших игроков по контрактам..."
 	}
 	"Database_Failure"
 	{
@@ -71,6 +77,7 @@
 		"fr"		"Base de données défecteux: {1}"
 		"tr"		"Veritabanı hatası: {1}";
 		"nl"		"Database fout: {1}";
+		"ru"		"Ошибка базы данных: {1}";
 	}
 	"Database_ErrorTopPlayer"
 	{
@@ -83,6 +90,7 @@
 		"fr"		"{1} Impossible d'obtenir les 7 meilleurs joueurs du classement."
 		"tr"		"{1} Şuanda ilk 7 oyuncuya ulaşılamıyor."
 		"nl"		"{1} Het is nu niet mogelijk om de top 7 spelers te laden."
+		"ru"		"{1} Невозможно получить 7 лучших игроков сейчас."
 	}
 	//Menu stuff
 	"Contract_MTopSeven"
@@ -95,6 +103,7 @@
 		"fr"		"Classement des 7 meilleurs joueurs"
 		"tr"		"En iyi 7 sözleşmeli oyuncular"
 		"nl"		"Top 7 contract spelers"
+		"ru"		"7 лучших игроков по контрактам"
 	}
 	"Contract_MenuItem"
 	{
@@ -107,6 +116,7 @@
 		"fr"		"{1} ({2} points(s), {3} contrat(s))"
 		"tr"		"{1} ({2} puanlar, {3} anlaşmalar)"
 		"nl"		"{1} ({2} punten, {3} contracten)"
+		"ru"		"{1} ({2} очко(-ов), {3} контракт(-а,-ов))"
 		}
 	//menu
 	"menu_objectiv"
@@ -117,6 +127,7 @@
 		"fr"		"Objectif:"
 		"tr"		"Amaç:"
 		"nl"		"Doel:"
+		"ru"		"Задача:"
 	}
 	"menu_accept"
 	{
@@ -126,6 +137,7 @@
 		"pt"		"Você aceita?"
 		"tr"		"Kabul ediyor musun?"
 		"nl"		"Wil je het accepteren?"
+		"ru"		"Вы принимаете это?"
 	}
 	"menu_yes"
 	{
@@ -135,6 +147,7 @@
 		"fr"		"Oui, je peux m'en occuper."
 		"tr"		"Evet, Bunu halledebilirim."
 		"nl"		"Ja, kom maar op."
+		"ru"		"Да, я справлюсь с этим."
 	}
 	"menu_no"
 	{
@@ -144,6 +157,7 @@
 		"fr"		"Non, je peux pas m'en occuper!"
 		"tr"		"Hayır, HAYATTA OLMAZ!"
 		"nl"		"Nee, liever niet!"
+		"ru"		"Чёрт возьми, НЕТ!"
 	}
 	//Contract
 	"Contract_GiveUsage"
@@ -156,6 +170,7 @@
 		"fr"		"Usage:	sm_givecontract [JOUEUR]"
 		"tr"		"Kullanımı: sm_givecontract [OYUNCU]"
 		"nl"		"Gebruik: sm_givecontract [SPELER]"
+		"ru"		"Использование: sm_givecontract [ИГРОК]"
 	}
 	"Contract_GiveSucess"
 	{
@@ -168,6 +183,7 @@
 		"fr"		"{1} Les joueurs ont reçu avec succès un contrat"
 		"tr"		"{1} oyuncular başarılı bir şekilde bir sözleşme teklifi aldı."
 		"nl"		"{1} spelers hebben succesvol hun contract ontvangen."
+		"ru"		"{1} игрок(-а,-ов) успешно получили контрактное предложение."
 	}
 	"Contract_None"
 	{
@@ -179,6 +195,7 @@
 		"fr"		"Vous n'avez pas de contrat pour l'instant."
 		"tr"		"Herhangi bir sözleşmen yok."
 		"nl"		"Je hebt op het moment geen contract."
+		"ru"		"У вас сейчас нет контракта."
 	}
 	"Contract_Mission"
 	{
@@ -191,6 +208,7 @@
 		"fr"		"Votre mission actuelle est: {1}"
 		"tr"		"Varolan görevin: {1}"
 		"nl"		"Je huidige missie is: {1}"
+		"ru"		"Ваша текущая миссия: {1}"
 	}
 	"Contract_Progress"
 	{
@@ -203,6 +221,7 @@
 		"fr"		"La progression de votre contrat est {red}{1}{default}/{red}{2}"
 		"tr"		"Sözleşmenizin ilerlemesi: {red}{1}{default}/{red}{2}"
 		"nl"		"Je contract vooruitgang: {red}{1}{default}/{red}{2}"
+		"ru"		"Прогресс вашего контракта: {red}{1}{default}/{red}{2}"
 	}
 	"Contract_Reward"
 	{
@@ -215,6 +234,7 @@
 		"fr"		"Vous serez récompensé avec {red}{1}{default} crédits."
 		"tr"		"Siz {red}{1}{default} kredi ile ödüllendirileceksiniz."
 		"nl"		"Je zult beloond worden met {red}{1}{default} punten."
+		"ru"		"Вы получите {red}{1}{default} кредитов."
 	}
 	"Contract_CompletedInfoSelf"
 	{
@@ -227,6 +247,7 @@
 		"fr"		"Tu as {red}{1}{default} de contrats fini ({red}{2}{default} points)."
 		"tr"		"Siz {red}{1}{default} sözleşme tamamladınız ({red}{2}{default} puanlar)."
 		"nl"		"Je hebt het {red}{1}{default} contract voltooid ({red}{2}{default} points)."
+		"ru"		"У вас есть {red}{1}{default} завершённых контрактов ({red}{2}{default} очко(-ов))."
 	}
 	"Contract_CompletedInfoOther"
 	{
@@ -239,6 +260,7 @@
 		"fr"		"{1} as {red}{2}{default} de contrats fini ({red}{3}{default} points)."
 		"tr"		"{1} sahip {red}{2}{default} sözleşme tamamladı ({red}{3}{default} puanlar)."
 		"nl"		"{1} heeft het {red}{2}{default} contract voltooid ({red}{3}{default} points)."
+		"ru"		"{1} имеет {red}{2}{default} завершённых контрактов ({red}{3}{default} очко(-ов))."
 	}
 	"Contract_New"
 	{
@@ -250,6 +272,7 @@
 		"fr"		"NOUVEAU CONTRAT"
 		"tr"		"YENİ SÖZLEŞME"
 		"nl"		"NIEUW CONTRACT"
+		"ru"		"НОВЫЙ КОНТРАКТ"
 	}
 	"Contract_ThankYou"
 	{
@@ -261,6 +284,7 @@
 		"fr"		"Vous avez réussi votre contrat, merci."
 		"tr"		"Siz başarılı bir şekilde sözleşmenizi tamamladınız, teşekkür ederiz."
 		"nl"		"Je hebt je contract succesvol voltooid, dankjewel."
+		"ru"		"Вы успешно выполнили свой контракт, спасибо."
 	}
 	"Contract_ThankReward"
 	{
@@ -273,6 +297,7 @@
 		"fr"		"{red}{1}{default} a été ajouté à votre compte."
 		"tr"		"{red}{1}{default} miktar bakiyenize eklendi."
 		"nl"		"{red}{1}{default} is toegevoegd aan je balans."
+		"ru"		"{red}{1}{default} - добавлено на ваш баланс."
 	}
 	//Objectives
 	"Contract_Walk"
@@ -286,6 +311,7 @@
 		"fr"		"Marcher {1} mètres!"
 		"tr"		"{1} Metre yürü!"
 		"nl"		"Loop {1} meters!"
+		"ru"		"Пройти пешком {1} метров!"
 	}
 	"Contract_Kill"
 	{
@@ -298,6 +324,7 @@
 		"fr"		"Tuer {1} joueurs!"
 		"tr"		"{1} Oyuncu öldür!"
 		"nl"		"Vermoord {1} spelers!"
+		"ru"		"Убить {1} игроков!"
 	}
 	"Contract_Headshot"
 	{
@@ -310,6 +337,7 @@
 		"fr"		"Fait {1} headshots!"
 		"tr"		"{1} Kafadan vuruş yap!"
 		"nl"		"Maak {1} headshots!"
+		"ru"		"Совершить {1} убийств в голову!"
 	}
 	"Contract_Die"
 	{
@@ -322,6 +350,7 @@
 		"fr"		"Fait un temps de {1} !"
 		"tr"		"{1} Defa öl!"
 		"nl"		""
+		"ru"		"Умереть {1} раз(-а)!"
 	}
 	"Contract_WardenRounds"
 	{
@@ -332,6 +361,7 @@
 		"fr"		"Survie en gardien pendant {1} rounds!"
 		"tr"		"Gardiyan olarak {1} tur ayakta kal!"
 		"nl"		"Overleef het {1} rondes as bewaker!"
+		"ru"		"Выжить за надзирателя {1} раундов!"
 	}
 	"Contract_WardenKills"
 	{
@@ -342,6 +372,7 @@
 		"fr"		"Tuer {1} le joueur en gardien!"
 		"tr"		"Gardiyan olarak {1} oyuncu öldür!"
 		"nl"		"Vermoord {1} spelers als bewaker!"
+		"ru"		"Убить {1} игроков за надзирателя!"
 	}
 	"Contract_LastRequest"
 	{
@@ -352,6 +383,7 @@
 		"fr"		"Attends et survive a la dernière volonté pendant {1} rounds!"
 		"tr"		"Ulaş & ayakta kal {1} Son İstek turu kadar!"
 		"nl"		"Haal en overleef {1} Last Request rondes!"
+		"ru"		"Достичь и выжить {1} раунд(-а,-ов) последнего желания!"
 	}
 	"Contract_BhopShavit"
 	{
@@ -362,6 +394,7 @@
 		"fr"		"Finit la map avec un temps de {1} !"
 		"tr"		"Bu haritayı {1} kere bitir!"
 		"nl"		"Eindig {1} keer deze map!"
+		"ru"		"Завершить карту {1} раз(-а)!"
 	}
 	"Contract_DealDamage"
 	{
@@ -372,6 +405,7 @@
 		"fr"		"Donne {1} de dégats!"
 		"tr"		"Anlaşma {1} hasar!"
 		"nl"		"Deel {1} damage uit!"
+		"ru"		"Нанести {1} урона!"
 		}
 	"Contract_TakeDamage"
 	{
@@ -382,6 +416,7 @@
 		"fr"		"Prend {1} de dommage!"
 		"tr"		"{1} hasar al!"
 		"nl"		"Incasseer {1} damage!"
+		"ru"		"Получить {1} урона!"
 	}
 	"Contract_NoScope"
 	{
@@ -392,6 +427,7 @@
 		"fr"		"Fait {1} de no scopes!"
 		"tr"		"Yap {1} yakınlaştırma olmadan!"
 		"nl"		"Maak {1} no scopes!"
+		"ru"		"Совершить {1} убийств(-а) в голову без прицела!"
 	}
 	"Contract_TeamKill"
 	{
@@ -402,6 +438,7 @@
 		"fr"		"Tuer {1} d'alliés!"
 		"tr"		"Öldür {1} müttefik(ler)!"
 		"nl"		"Vermoord {1} teamgenoten!"
+		"ru"		"Убить {1} союзника(-ов)!"
 	}
 	"Contract_EventDays"
 	{
@@ -411,5 +448,6 @@
 		"de"		"Gewinne {1} Event Days!"
 		"nl"		"Win {1} Event Dagen!"
 		"fr"		"Gagner {1} Event Days!"
+		"ru"		"Выиграть в {1} особых днях!"
 	}
 }
