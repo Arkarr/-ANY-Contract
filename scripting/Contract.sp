@@ -136,11 +136,14 @@ public void OnPluginStart()
 	
 	HookEvent("player_death", OnPlayerDeath);
 	
-	HookEvent("witch_killed", L4D2_OnWitchKilled);
-	HookEvent("tank_killed", L4D2_OnTankKilled);
-	HookEvent("charger_killed", L4D2_OnChargerKilled);
-	HookEvent("spitter_killed", L4D2_OnSpitterKilled);
-	HookEvent("jockey_killed", L4D2_OnJockeyKilled);
+	if(engineName == Engine_Left4Dead2)
+	{
+		HookEvent("witch_killed", L4D2_OnWitchKilled);
+		HookEvent("tank_killed", L4D2_OnTankKilled);
+		HookEvent("charger_killed", L4D2_OnChargerKilled);
+		HookEvent("spitter_killed", L4D2_OnSpitterKilled);
+		HookEvent("jockey_killed", L4D2_OnJockeyKilled);
+	}
 	
 	HookEvent("round_end", OnRoundEnd);
 	
